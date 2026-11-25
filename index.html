@@ -1,0 +1,3033 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>El Buen Pastor — Aventura Retro de Plataformas</title>
+  <style>
+    :root {
+      --bg-deep: #0b2436;
+      --panel-bg: #11344d;
+      --panel-border: #38bdf8;
+      --gold: #ffd54f;
+      --gold-deep: #f59e0b;
+      --emerald: #10b981;
+      --turquoise: #22d3ee;
+      --cream: #fffbeb;
+      --text-light: #f8fafc;
+      --danger: #fb7185;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+      background: radial-gradient(circle at top, #134e6f 0%, #092032 65%, #05131f 100%);
+      color: var(--text-light);
+      font-family: "Courier New", Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .game-shell {
+      width: 100%;
+      max-width: 1000px;
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Top Control & HUD Bar */
+    .top-bar {
+      width: 100%;
+      background: linear-gradient(180deg, #16486b 0%, #0f324c 100%);
+      border: 3px solid var(--gold);
+      border-radius: 10px;
+      padding: 6px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: 0 4px 0 #071926, 0 0 18px rgba(56, 189, 248, 0.25);
+    }
+
+    .hud-stats {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 0.3px;
+    }
+
+    .stat-pill {
+      background: rgba(7, 25, 38, 0.72);
+      border: 2px solid rgba(56, 189, 248, 0.55);
+      border-radius: 6px;
+      padding: 3px 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #fff;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .stat-pill.gold {
+      border-color: var(--gold);
+      color: #fde68a;
+    }
+
+    .stat-pill.magnet {
+      border-color: #f472b6;
+      background: rgba(131, 24, 67, 0.75);
+      color: #fbcfe8;
+      animation: pulseGlow 0.8s infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      from { box-shadow: 0 0 4px rgba(244, 114, 182, 0.5); }
+      to { box-shadow: 0 0 12px rgba(253, 224, 71, 0.9); }
+    }
+
+    .toolbar-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pixel-btn, .pixel-select {
+      font-family: "Courier New", Courier, monospace;
+      font-weight: bold;
+      font-size: 12px;
+      padding: 5px 9px;
+      border-radius: 6px;
+      border: 2px solid #fff;
+      background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%);
+      color: #fff;
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.6);
+      cursor: pointer;
+      box-shadow: 0 3px 0 #075985;
+      transition: transform 0.08s ease, filter 0.12s ease;
+      outline: none;
+    }
+
+    .pixel-btn:hover, .pixel-select:hover {
+      filter: brightness(1.1);
+    }
+
+    .pixel-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #075985;
+    }
+
+    .pixel-btn.gold {
+      background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+      border-color: #fef3c7;
+      box-shadow: 0 3px 0 #92400e;
+      color: #1f1300;
+      text-shadow: none;
+    }
+
+    .pixel-btn.emerald {
+      background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+      border-color: #d1fae5;
+      box-shadow: 0 3px 0 #065f46;
+    }
+
+    .pixel-btn.muted {
+      background: linear-gradient(180deg, #64748b 0%, #475569 100%);
+      border-color: #cbd5e1;
+      box-shadow: 0 3px 0 #334155;
+    }
+
+    .pixel-btn.danger {
+      background: linear-gradient(180deg, #fb7185 0%, #e11d48 100%);
+      border-color: #ffe4e6;
+      box-shadow: 0 3px 0 #881337;
+    }
+
+    .pixel-select {
+      background: #0f324c;
+      border-color: var(--gold);
+      color: #fef08a;
+      box-shadow: 0 3px 0 #071926;
+      padding: 4px 8px;
+    }
+
+    /* Stage Container */
+    .stage-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 480 / 272;
+      max-height: 70vh;
+      background: #0ea5e9;
+      border: 4px solid var(--gold);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.55), 0 0 28px rgba(253, 224, 71, 0.22);
+    }
+
+    canvas#gameCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    /* Special Verse Toast Banner (Non-blocking during gameplay) */
+    .verse-toast {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-140%);
+      width: min(92%, 560px);
+      background: linear-gradient(180deg, rgba(255, 251, 235, 0.96) 0%, rgba(254, 243, 199, 0.95) 100%);
+      color: #451a03;
+      border: 3px solid #f59e0b;
+      border-radius: 10px;
+      padding: 8px 14px;
+      text-align: center;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 0 16px rgba(253, 224, 71, 0.85);
+      pointer-events: none;
+      opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+      z-index: 15;
+    }
+
+    .verse-toast.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .verse-toast .toast-badge {
+      font-size: 11px;
+      font-weight: bold;
+      color: #b45309;
+      letter-spacing: 0.6px;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+    }
+
+    .verse-toast .toast-text {
+      font-size: 13px;
+      font-weight: bold;
+      line-height: 1.3;
+    }
+
+    .verse-toast .toast-ref {
+      font-size: 11px;
+      color: #92400e;
+      margin-top: 3px;
+      font-style: italic;
+    }
+
+    /* Overlays (Title, Pause, Void Game Over, Level Clear, Victory) */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(6, 23, 38, 0.78);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      z-index: 25;
+    }
+
+    .overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(94%, 560px);
+      max-height: 94%;
+      overflow-y: auto;
+      background: linear-gradient(180deg, #134163 0%, #0c283e 100%);
+      border: 4px solid var(--gold);
+      border-radius: 14px;
+      padding: 16px 20px;
+      text-align: center;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65), 0 0 24px rgba(253, 224, 71, 0.3);
+    }
+
+    .modal-card h1 {
+      margin: 0 0 6px 0;
+      font-size: clamp(19px, 3vw, 27px);
+      color: var(--gold);
+      text-shadow: 2px 2px 0 #78350f, 0 0 12px rgba(253, 224, 71, 0.5);
+    }
+
+    .modal-card h2 {
+      margin: 0 0 8px 0;
+      font-size: clamp(16px, 2.5vw, 22px);
+      color: #67e8f9;
+      text-shadow: 2px 2px 0 #082f49;
+    }
+
+    .modal-subtitle {
+      font-size: 13px;
+      color: #e0f2fe;
+      line-height: 1.45;
+      margin: 6px 0 12px 0;
+    }
+
+    .verse-box {
+      background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+      color: #451a03;
+      border: 3px solid #f59e0b;
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin: 10px 0 14px 0;
+      box-shadow: inset 0 0 10px rgba(245, 158, 11, 0.2);
+    }
+
+    .verse-box p {
+      margin: 0;
+      font-size: 13px;
+      font-weight: bold;
+      line-height: 1.4;
+    }
+
+    .verse-box span {
+      display: block;
+      margin-top: 5px;
+      font-size: 12px;
+      color: #92400e;
+      font-weight: bold;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 10px 0 14px 0;
+    }
+
+    .stat-tile {
+      background: rgba(7, 25, 38, 0.75);
+      border: 2px solid #38bdf8;
+      border-radius: 8px;
+      padding: 6px;
+      font-size: 12px;
+    }
+
+    .stat-tile strong {
+      display: block;
+      font-size: 15px;
+      color: var(--gold);
+      margin-top: 2px;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .pixel-btn.lg {
+      font-size: 14px;
+      padding: 9px 18px;
+    }
+
+    .level-picker {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .level-chip {
+      font-family: "Courier New", Courier, monospace;
+      font-weight: bold;
+      font-size: 11px;
+      padding: 5px 4px;
+      border-radius: 6px;
+      border: 2px solid #38bdf8;
+      background: rgba(7, 25, 38, 0.8);
+      color: #e0f2fe;
+      cursor: pointer;
+    }
+
+    .level-chip.selected {
+      background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+      border-color: #fef3c7;
+      color: #1f1300;
+    }
+
+    .controls-hint {
+      font-size: 11px;
+      color: #bae6fd;
+      background: rgba(7, 25, 38, 0.65);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 8px;
+      padding: 7px 10px;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    /* Touch / On-screen Arcade Controls */
+    .touch-controls {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 6px 4px 2px 4px;
+    }
+
+    .touch-controls.hidden {
+      display: none;
+    }
+
+    .touch-pad {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .touch-btn {
+      width: 64px;
+      height: 54px;
+      border-radius: 12px;
+      border: 3px solid #fef3c7;
+      background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+      color: #fff;
+      font-family: "Courier New", Courier, monospace;
+      font-weight: bold;
+      font-size: 18px;
+      box-shadow: 0 4px 0 #082f49;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .touch-btn span.lbl {
+      font-size: 9px;
+      margin-top: 1px;
+      letter-spacing: 0.4px;
+    }
+
+    .touch-btn.active, .touch-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #082f49;
+      filter: brightness(1.18);
+    }
+
+    .touch-btn.jump {
+      width: 74px;
+      background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+      box-shadow: 0 4px 0 #064e3b;
+    }
+
+    .touch-btn.staff {
+      width: 78px;
+      background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+      color: #271500;
+      box-shadow: 0 4px 0 #78350f;
+    }
+
+    .footer-note {
+      font-size: 11px;
+      color: #94a3b8;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      .game-shell {
+        padding: 5px 6px;
+        gap: 6px;
+      }
+      .top-bar {
+        padding: 5px 7px;
+      }
+      .hud-stats {
+        font-size: 11px;
+        gap: 5px;
+      }
+      .pixel-btn, .pixel-select {
+        font-size: 11px;
+        padding: 4px 7px;
+      }
+      .level-picker {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .touch-btn {
+        width: 58px;
+        height: 50px;
+      }
+      .touch-btn.jump, .touch-btn.staff {
+        width: 68px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-shell">
+    <!-- Top HUD & Toolbar -->
+    <div class="top-bar">
+      <div class="hud-stats">
+        <div class="stat-pill gold" id="hudLevel">Nivel 1/10 · Belén</div>
+        <div class="stat-pill" id="hudScore">⭐ 00000</div>
+        <div class="stat-pill" id="hudStars">Estrellas: 0/0</div>
+        <div class="stat-pill" id="hudBloom">🌸 0%</div>
+        <div class="stat-pill magnet" id="hudMagnet" style="display:none;">🧲 Atracción: 12s</div>
+      </div>
+
+      <div class="toolbar-controls">
+        <select id="songSelect" class="pixel-select" title="Seleccionar canción de alabanza">
+          <option value="libreSoy">🎵 Libre Soy (128 BPM)</option>
+          <option value="jubilo">🎵 Júbilo / Alaba (132 BPM)</option>
+        </select>
+        <button id="btnMusic" class="pixel-btn emerald" title="Activar o silenciar música">🔊 Música: ON</button>
+        <button id="btnSfx" class="pixel-btn" title="Activar o silenciar efectos retro">🔔 SFX: ON</button>
+        <button id="btnPause" class="pixel-btn gold" title="Pausar o reanudar (P)">⏸ Pausar</button>
+        <button id="btnRestartTop" class="pixel-btn danger" title="Reiniciar nivel (R)">🔄 Reiniciar</button>
+        <button id="btnTouchToggle" class="pixel-btn" title="Mostrar u ocultar controles táctiles">🎮 Táctil</button>
+      </div>
+    </div>
+
+    <!-- Game Canvas Stage -->
+    <div class="stage-wrapper">
+      <canvas id="gameCanvas" width="480" height="272"></canvas>
+
+      <!-- Special Star Bible Promise Toast -->
+      <div id="verseToast" class="verse-toast" aria-live="polite">
+        <div class="toast-badge">✨ Estrella Especial +300 · Mayor Atracción de Estrellas ✨</div>
+        <div class="toast-text" id="toastText"></div>
+        <div class="toast-ref" id="toastRef"></div>
+      </div>
+
+      <!-- Title / Start Overlay -->
+      <div id="overlayTitle" class="overlay active">
+        <div class="modal-card">
+          <h1>✨ EL BUEN PASTOR ✨</h1>
+          <h2>Aventura Retro en 10 Paisajes Bíblicos</h2>
+          <p class="modal-subtitle">
+            Guía a <strong>Jesús el Buen Pastor</strong> y a su fiel <strong>oveja</strong> por 10 tierras llenas de luz.
+            Recoge <strong>Estrellas de Promesa</strong> para hacer florecer los campos y aclarar el cielo,
+            y usa el <strong>Cayado de Luz</strong> para transformar las nubes grises de duda en nubes blancas seguras.
+          </p>
+
+          <div class="level-picker" id="levelPicker"></div>
+
+          <div class="btn-row">
+            <button id="btnStartGame" class="pixel-btn gold lg">▶ ¡Comenzar Aventura!</button>
+          </div>
+
+          <div class="controls-hint">
+            <strong>Teclado:</strong> ⬅️ ➡️ o <code>A</code>/<code>D</code> Mover ·
+            <code>Espacio</code> / <code>W</code> / <code>⬆️</code> Saltar ·
+            <code>X</code> / <code>J</code> / <code>Shift</code> / <code>F</code> Cayado de Luz ·
+            <code>P</code> Pausar · <code>R</code> Reiniciar
+          </div>
+        </div>
+      </div>
+
+      <!-- Pause Overlay -->
+      <div id="overlayPause" class="overlay">
+        <div class="modal-card">
+          <h1>⏸ JUEGO EN PAUSA</h1>
+          <p class="modal-subtitle" id="pauseLevelName">Descansa un momento en las verdes praderas.</p>
+          <div class="btn-row">
+            <button id="btnResume" class="pixel-btn emerald lg">▶ Reanudar</button>
+            <button id="btnRestartPause" class="pixel-btn gold lg">🔄 Reiniciar Nivel</button>
+            <button id="btnBackTitlePause" class="pixel-btn lg">🏠 Menú Principal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fall into Void Overlay (Immediate end) -->
+      <div id="overlayVoid" class="overlay">
+        <div class="modal-card">
+          <h1 style="color:#fda4af;">☁️ ¡CAÍSTE AL VACÍO! ☁️</h1>
+          <p class="modal-subtitle">
+            El nivel ha terminado, pero el Buen Pastor siempre extiende Su mano para comenzar de nuevo.
+          </p>
+          <div class="verse-box">
+            <p>"Aunque caiga, no quedará postrado, porque el Señor sostiene su mano."</p>
+            <span>— Salmos 37:24</span>
+          </div>
+          <div class="btn-row">
+            <button id="btnRetryVoid" class="pixel-btn gold lg">🔄 Volver a Iniciar de Nuevo</button>
+            <button id="btnBackTitleVoid" class="pixel-btn lg">🏠 Elegir Nivel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Level Complete Overlay -->
+      <div id="overlayClear" class="overlay">
+        <div class="modal-card">
+          <h1 id="clearTitle">🌈 ¡NIVEL COMPLETADO! 🌈</h1>
+          <h2 id="clearSubtitle">Praderas de Belén</h2>
+
+          <div class="stats-grid">
+            <div class="stat-tile">Puntos<strong id="clearScore">0</strong></div>
+            <div class="stat-tile">Estrellas<strong id="clearStars">0/0</strong></div>
+            <div class="stat-tile">Florecimiento<strong id="clearBloom">100%</strong></div>
+          </div>
+
+          <div class="verse-box">
+            <p id="clearVerseText"></p>
+            <span id="clearVerseRef"></span>
+          </div>
+
+          <div class="btn-row">
+            <button id="btnNextLevel" class="pixel-btn emerald lg">➡ Siguiente Paisaje</button>
+            <button id="btnReplayClear" class="pixel-btn gold lg">🔄 Repetir Nivel</button>
+            <button id="btnBackTitleClear" class="pixel-btn lg">🏠 Menú</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- On-screen Touch Controls -->
+    <div id="touchControls" class="touch-controls">
+      <div class="touch-pad">
+        <button class="touch-btn" id="touchLeft" aria-label="Mover a la izquierda">◀<span class="lbl">IZQ</span></button>
+        <button class="touch-btn" id="touchRight" aria-label="Mover a la derecha">▶<span class="lbl">DER</span></button>
+      </div>
+      <div class="touch-pad">
+        <button class="touch-btn staff" id="touchStaff" aria-label="Usar Cayado de Luz">✨<span class="lbl">CAYADO</span></button>
+        <button class="touch-btn jump" id="touchJump" aria-label="Saltar">⬆<span class="lbl">SALTAR</span></button>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      Estrellas Doradas: +100 pts y hacen florecer el mundo · Estrellas Especiales: +300 pts, imán de estrellas y versículo · Cayado de Luz: purifica nubes grises
+    </div>
+  </div>
+
+  <script>
+  (() => {
+    "use strict";
+
+    // =========================================================================
+    // 1. CONSTANTS, BIBLE VERSES & 10 BIBLICAL LANDSCAPES
+    // =========================================================================
+    const SCREEN_W = 480;
+    const SCREEN_H = 272;
+    const TILE = 16;
+    const GRAVITY = 0.36;
+    const MAX_FALL_SPEED = 7.4;
+
+    const PROMISE_VERSES = [
+      { text: "Jehová es mi pastor; nada me faltará. En lugares de delicados pastos me hará descansar.", ref: "Salmos 23:1-2" },
+      { text: "Yo soy el buen pastor; el buen pastor su vida da por las ovejas.", ref: "Juan 10:11" },
+      { text: "No temas, porque yo estoy contigo; no desmayes, porque yo soy tu Dios que te esfuerzo.", ref: "Isaías 41:10" },
+      { text: "Porque yo sé los pensamientos que tengo acerca de vosotros, pensamientos de paz y no de mal, para daros un futuro y una esperanza.", ref: "Jeremías 29:11" },
+      { text: "Todo lo puedo en Cristo que me fortalece.", ref: "Filipenses 4:13" },
+      { text: "He aquí yo estoy con vosotros todos los días, hasta el fin del mundo.", ref: "Mateo 28:20" },
+      { text: "Jehová te pastoreará siempre, y en las sequías saciará tu alma.", ref: "Isaías 58:11" },
+      { text: "Echando toda vuestra ansiedad sobre él, porque él tiene cuidado de vosotros.", ref: "1 Pedro 5:7" },
+      { text: "El Señor es mi luz y mi salvación; ¿de quién temeré?", ref: "Salmos 27:1" },
+      { text: "Mis ovejas oyen mi voz, y yo las conozco, y me siguen.", ref: "Juan 10:27" },
+      { text: "Mira que te mando que te esfuerces y seas valiente; no temas ni desmayes.", ref: "Josué 1:9" },
+      { text: "La paz os dejo, mi paz os doy; no se turbe vuestro corazón, ni tenga miedo.", ref: "Juan 14:27" }
+    ];
+
+    const ENCOURAGEMENT_VERSES = [
+      { text: "El Señor te bendiga y te guarde; haga resplandecer su rostro sobre ti y te dé paz.", ref: "Números 6:24-26" },
+      { text: "Encomienda a Jehová tu camino, y confía en él; y él hará.", ref: "Salmos 37:5" },
+      { text: "Los que esperan a Jehová tendrán nuevas fuerzas; levantarán alas como las águilas.", ref: "Isaías 40:31" },
+      { text: "Esforzaos y cobrad ánimo; no temáis, porque Jehová tu Dios va contigo.", ref: "Deuteronomio 31:6" },
+      { text: "Ciertamente el bien y la misericordia me seguirán todos los días de mi vida.", ref: "Salmos 23:6" },
+      { text: "El gozo del Señor es vuestra fortaleza.", ref: "Nehemías 8:10" },
+      { text: "Lámpara es a mis pies tu palabra, y lumbrera a mi camino.", ref: "Salmos 119:105" },
+      { text: "Bienaventurados los de limpio corazón, porque ellos verán a Dios.", ref: "Mateo 5:8" },
+      { text: "Resplandece, porque ha venido tu luz, y la gloria del Señor ha nacido sobre ti.", ref: "Isaías 60:1" },
+      { text: "He aquí, yo hago nuevas todas las cosas. ¡Alabad al Señor porque su amor es eterno!", ref: "Apocalipsis 21:5 / Salmos 136:1" }
+    ];
+
+    const LEVEL_DEFS = [
+      {
+        id: 1,
+        name: "Praderas de Belén",
+        short: "Belén",
+        theme: "meadow",
+        skyStartTop: "#38bdf8", skyStartBot: "#bae6fd",
+        skyEndTop: "#06b6d4",   skyEndBot: "#fde68a",
+        hillA: "#22c55e", hillB: "#16a34a",
+        groundTop: "#10b981", groundBody: "#92400e",
+        water: false,
+        lengthTiles: 92,
+        gaps: [[24, 2], [44, 3], [66, 3]],
+        platforms: [
+          { tx: 10, ty: 11, w: 4 },
+          { tx: 17, ty: 9, w: 3 },
+          { tx: 30, ty: 10, w: 5 },
+          { tx: 37, ty: 8, w: 4 },
+          { tx: 51, ty: 10, w: 4 },
+          { tx: 57, ty: 8, w: 4 },
+          { tx: 73, ty: 10, w: 5 }
+        ],
+        grayClouds: [
+          { tx: 15, ty: 11, w: 3 },   // Safe over ground to learn Cayado de Luz!
+          { tx: 44, ty: 12, w: 3 },   // Bridges gap cleanly
+          { tx: 66, ty: 11, w: 3 }    // Bridges gap cleanly
+        ],
+        movingPlatforms: [],
+        specialStars: [{ tx: 38, ty: 6 }],
+        stars: [
+          [7,11],[8,11],[11,9],[12,9],[18,7],[24,10],[25,10],[32,8],[33,8],
+          [45,10],[52,8],[58,6],[67,9],[75,8],[76,8]
+        ]
+      },
+      {
+        id: 2,
+        name: "Río Jordán",
+        short: "Jordán",
+        theme: "river",
+        skyStartTop: "#0ea5e9", skyStartBot: "#a5f3fc",
+        skyEndTop: "#06b6d4",   skyEndBot: "#fef08a",
+        hillA: "#34d399", hillB: "#059669",
+        groundTop: "#14b8a6", groundBody: "#78350f",
+        water: true,
+        lengthTiles: 100,
+        gaps: [[18, 4], [28, 4], [42, 5], [58, 4], [72, 5]],
+        platforms: [
+          { tx: 11, ty: 11, w: 4 },
+          { tx: 23, ty: 11, w: 4 },
+          { tx: 35, ty: 10, w: 4 },
+          { tx: 49, ty: 10, w: 5 },
+          { tx: 65, ty: 11, w: 4 },
+          { tx: 80, ty: 10, w: 5 }
+        ],
+        grayClouds: [
+          { tx: 18, ty: 12, w: 3 },
+          { tx: 29, ty: 11, w: 3 },
+          { tx: 43, ty: 11, w: 3 },
+          { tx: 58, ty: 11, w: 3 },
+          { tx: 73, ty: 11, w: 3 }
+        ],
+        movingPlatforms: [],
+        specialStars: [{ tx: 51, ty: 8 }],
+        stars: [
+          [8,11],[12,9],[13,9],[19,10],[24,9],[29,9],[36,8],[37,8],
+          [44,9],[59,9],[66,9],[74,9],[81,8],[82,8]
+        ]
+      },
+      {
+        id: 3,
+        name: "Colinas de Galilea",
+        short: "Galilea",
+        theme: "hills",
+        skyStartTop: "#0284c7", skyStartBot: "#bae6fd",
+        skyEndTop: "#0891b2",   skyEndBot: "#fde047",
+        hillA: "#4ade80", hillB: "#16a34a",
+        groundTop: "#22c55e", groundBody: "#854d0e",
+        water: false,
+        lengthTiles: 108,
+        gaps: [[22, 4], [36, 5], [54, 4], [70, 5], [84, 4]],
+        platforms: [
+          { tx: 9, ty: 11, w: 4 },
+          { tx: 15, ty: 9, w: 4 },
+          { tx: 28, ty: 10, w: 5 },
+          { tx: 44, ty: 9, w: 5 },
+          { tx: 51, ty: 7, w: 4 },
+          { tx: 62, ty: 10, w: 4 },
+          { tx: 77, ty: 9, w: 4 },
+          { tx: 91, ty: 10, w: 5 }
+        ],
+        grayClouds: [
+          { tx: 22, ty: 11, w: 3 },
+          { tx: 37, ty: 11, w: 3 },
+          { tx: 55, ty: 10, w: 3 },
+          { tx: 85, ty: 11, w: 3 }
+        ],
+        movingPlatforms: [
+          { tx: 70, ty: 11, w: 3, rangeX: 36, speed: 0.7 }
+        ],
+        specialStars: [{ tx: 52, ty: 5 }, { tx: 78, ty: 7 }],
+        stars: [
+          [10,9],[16,7],[17,7],[23,9],[29,8],[30,8],[38,9],[45,7],[46,7],
+          [56,8],[63,8],[71,9],[86,9],[92,8],[93,8]
+        ]
+      },
+      {
+        id: 4,
+        name: "Lago de Genesaret",
+        short: "Genesaret",
+        theme: "lake",
+        skyStartTop: "#0369a1", skyStartBot: "#99f6e4",
+        skyEndTop: "#06b6d4",   skyEndBot: "#fef08a",
+        hillA: "#2dd4bf", hillB: "#0f766e",
+        groundTop: "#10b981", groundBody: "#9a3412",
+        water: true,
+        lengthTiles: 114,
+        gaps: [[15, 5], [27, 5], [40, 6], [54, 5], [68, 6], [83, 5]],
+        platforms: [
+          { tx: 9, ty: 11, w: 4 },
+          { tx: 22, ty: 11, w: 4 },
+          { tx: 34, ty: 10, w: 4 },
+          { tx: 48, ty: 10, w: 4 },
+          { tx: 61, ty: 9, w: 5 },
+          { tx: 76, ty: 10, w: 5 },
+          { tx: 91, ty: 11, w: 5 }
+        ],
+        grayClouds: [
+          { tx: 16, ty: 12, w: 3 },
+          { tx: 28, ty: 11, w: 3 },
+          { tx: 41, ty: 11, w: 3 },
+          { tx: 55, ty: 11, w: 3 },
+          { tx: 84, ty: 11, w: 3 }
+        ],
+        movingPlatforms: [
+          { tx: 69, ty: 11, w: 3, rangeX: 40, speed: 0.85 }
+        ],
+        specialStars: [{ tx: 35, ty: 8 }, { tx: 63, ty: 7 }],
+        stars: [
+          [10,9],[17,10],[23,9],[29,9],[42,9],[49,8],[56,9],
+          [62,7],[70,9],[77,8],[78,8],[85,9],[92,9],[93,9],[97,11]
+        ]
+      },
+      {
+        id: 5,
+        name: "Monte Bienaventuranzas",
+        short: "Bienavent.",
+        theme: "mountain",
+        skyStartTop: "#0284c7", skyStartBot: "#ddd6fe",
+        skyEndTop: "#06b6d4",   skyEndBot: "#fde68a",
+        hillA: "#34d399", hillB: "#047857",
+        groundTop: "#10b981", groundBody: "#78350f",
+        water: false,
+        lengthTiles: 118,
+        gaps: [[19, 4], [31, 5], [47, 5], [63, 5], [78, 5], [93, 4]],
+        platforms: [
+          { tx: 8, ty: 11, w: 4 },
+          { tx: 13, ty: 9, w: 4 },
+          { tx: 25, ty: 10, w: 4 },
+          { tx: 38, ty: 9, w: 5 },
+          { tx: 42, ty: 6, w: 4 },
+          { tx: 54, ty: 10, w: 5 },
+          { tx: 70, ty: 9, w: 5 },
+          { tx: 85, ty: 8, w: 5 },
+          { tx: 99, ty: 10, w: 5 }
+        ],
+        grayClouds: [
+          { tx: 20, ty: 11, w: 3 },
+          { tx: 32, ty: 10, w: 3 },
+          { tx: 48, ty: 10, w: 3 },
+          { tx: 64, ty: 10, w: 3 },
+          { tx: 94, ty: 10, w: 3 }
+        ],
+        movingPlatforms: [
+          { tx: 79, ty: 10, w: 3, rangeX: 38, speed: 0.9 }
+        ],
+        specialStars: [{ tx: 43, ty: 4 }, { tx: 87, ty: 6 }],
+        stars: [
+          [9,9],[14,7],[15,7],[21,9],[26,8],[33,8],[39,7],[49,8],
+          [55,8],[56,8],[65,8],[71,7],[72,7],[80,8],[100,8],[101,8]
+        ]
+      },
+      {
+        id: 6,
+        name: "Desierto de Judea",
+        short: "Judea",
+        theme: "desert",
+        skyStartTop: "#0369a1", skyStartBot: "#fed7aa",
+        skyEndTop: "#0891b2",   skyEndBot: "#fef08a",
+        hillA: "#fbbf24", hillB: "#d97706",
+        groundTop: "#f59e0b", groundBody: "#b45309",
+        water: false,
+        lengthTiles: 122,
+        gaps: [[17, 5], [30, 5], [44, 6], [60, 5], [75, 6], [90, 5]],
+        platforms: [
+          { tx: 10, ty: 11, w: 4 },
+          { tx: 24, ty: 10, w: 4 },
+          { tx: 37, ty: 9, w: 5 },
+          { tx: 52, ty: 10, w: 5 },
+          { tx: 67, ty: 9, w: 5 },
+          { tx: 83, ty: 9, w: 5 },
+          { tx: 97, ty: 10, w: 5 }
+        ],
+        grayClouds: [
+          { tx: 18, ty: 11, w: 3 },
+          { tx: 31, ty: 11, w: 3 },
+          { tx: 45, ty: 10, w: 3 },
+          { tx: 61, ty: 10, w: 3 },
+          { tx: 91, ty: 10, w: 3 }
+        ],
+        movingPlatforms: [
+          { tx: 76, ty: 10, w: 3, rangeX: 44, speed: 1.0 },
+          { tx: 53, ty: 7, w: 3, rangeX: 34, speed: 0.85 }
+        ],
+        specialStars: [{ tx: 39, ty: 7 }, { tx: 69, ty: 7 }],
+        stars: [
+          [11,9],[12,9],[19,9],[25,8],[32,9],[46,8],[53,5],[54,5],
+          [62,8],[68,7],[77,8],[84,7],[85,7],[92,8],[98,8],[99,8]
+        ]
+      },
+      {
+        id: 7,
+        name: "Jardín de Getsemaní",
+        short: "Getsemaní",
+        theme: "garden",
+        skyStartTop: "#1e3a8a", skyStartBot: "#67e8f9",
+        skyEndTop: "#0284c7",   skyEndBot: "#fde047",
+        hillA: "#10b981", hillB: "#065f46",
+        groundTop: "#059669", groundBody: "#5c4033",
+        water: false,
+        lengthTiles: 126,
+        gaps: [[16, 5], [29, 6], [43, 5], [58, 6], [73, 5], [88, 6], [102, 4]],
+        platforms: [
+          { tx: 9, ty: 11, w: 4 },
+          { tx: 23, ty: 10, w: 4 },
+          { tx: 37, ty: 9, w: 4 },
+          { tx: 50, ty: 9, w: 5 },
+          { tx: 66, ty: 10, w: 4 },
+          { tx: 80, ty: 8, w: 5 },
+          { tx: 96, ty: 10, w: 4 }
+        ],
+        grayClouds: [
+          { tx: 17, ty: 11, w: 3 },
+          { tx: 30, ty: 10, w: 3 },
+          { tx: 44, ty: 10, w: 3 },
+          { tx: 59, ty: 10, w: 3 },
+          { tx: 74, ty: 10, w: 3 },
+          { tx: 102, ty: 11, w: 3 }
+        ],
+        movingPlatforms: [
+          { tx: 89, ty: 10, w: 3, rangeX: 44, speed: 1.05 }
+        ],
+        specialStars: [{ tx: 52, ty: 7 }, { tx: 82, ty: 6 }],
+        stars: [
+          [10,9],[18,9],[24,8],[31,8],[38,7],[45,8],[51,7],[60,8],
+          [67,8],[75,8],[81,6],[83,6],[90,8],[97,8],[103,9],[109,11]
+        ]
+      },
+      {
+        id: 8,
+        name: "Camino de Emaús",
+        short: "Emaús",
+        theme: "emmaus",
+        skyStartTop: "#0284c7", skyStartBot: "#fed7aa",
+        skyEndTop: "#06b6d4",   skyEndBot: "#fef08a",
+        hillA: "#22c55e", hillB: "#15803d",
+        groundTop: "#16a34a", groundBody: "#92400e",
+        water: false,
+        lengthTiles: 132,
+        gaps: [[15, 5], [27, 6], [42, 6], [57, 5], [71, 6], [86, 6], [102, 5]],
+        platforms: [
+          { tx: 9, ty: 11, w: 4 },
+          { tx: 22, ty: 10, w: 3 },
+          { tx: 35, ty: 9, w: 4 },
+          { tx: 50, ty: 10, w: 4 },
+          { tx: 64, ty: 9, w: 4 },
+          { tx: 79, ty: 9, w: 4 },
+          { tx: 94, ty: 9, w: 5 },
+          { tx: 110, ty: 10, w: 5 }
+        ],
+        grayClouds: [
+          { tx: 16, ty: 11, w: 3 },
+          { tx: 28, ty: 10, w: 3 },
+          { tx: 43, ty: 10, w: 3 },
+          { tx: 58, ty: 10, w: 3 },
+          { tx: 87, ty: 10, w: 3 },
+          { tx: 103, ty: 10, w: 3 }
+        ],
+        movingPlatforms: [
+          { tx: 72, ty: 10, w: 3, rangeX: 44, speed: 1.1 },
+          { tx: 36, ty: 6, w: 3, rangeX: 34, speed: 0.95 }
+        ],
+        specialStars: [{ tx: 37, ty: 4 }, { tx: 96, ty: 7 }],
+        stars: [
+          [10,9],[17,9],[23,8],[29,8],[36,7],[44,8],[51,8],[59,8],
+          [65,7],[73,8],[80,7],[88,8],[95,7],[104,8],[111,8],[112,8]
+        ]
+      },
+      {
+        id: 9,
+        name: "Monte Tabor",
+        short: "Tabor",
+        theme: "tabor",
+        skyStartTop: "#0369a1", skyStartBot: "#a5f3fc",
+        skyEndTop: "#0284c7",   skyEndBot: "#fde047",
+        hillA: "#38bdf8", hillB: "#0284c7",
+        groundTop: "#34d399", groundBody: "#7c2d12",
+        water: false,
+        lengthTiles: 136,
+        gaps: [[14, 6], [27, 6], [41, 6], [56, 6], [70, 6], [86, 6], [102, 6]],
+        platforms: [
+          { tx: 8, ty: 11, w: 4 },
+          { tx: 21, ty: 9, w: 4 },
+          { tx: 35, ty: 8, w: 4 },
+          { tx: 49, ty: 9, w: 4 },
+          { tx: 64, ty: 8, w: 4 },
+          { tx: 78, ty: 9, w: 5 },
+          { tx: 94, ty: 8, w: 5 },
+          { tx: 110, ty: 10, w: 5 }
+        ],
+        grayClouds: [
+          { tx: 15, ty: 10, w: 3 },
+          { tx: 28, ty: 9, w: 3 },
+          { tx: 42, ty: 9, w: 3 },
+          { tx: 57, ty: 9, w: 3 },
+          { tx: 71, ty: 9, w: 3 },
+          { tx: 103, ty: 10, w: 3 }
+        ],
+        movingPlatforms: [
+          { tx: 87, ty: 9, w: 3, rangeX: 46, speed: 1.2 },
+          { tx: 49, ty: 6, w: 3, rangeX: 30, speed: 1.0 }
+        ],
+        specialStars: [{ tx: 36, ty: 6 }, { tx: 96, ty: 6 }],
+        stars: [
+          [9,9],[16,8],[22,7],[29,7],[37,6],[43,7],[50,4],[58,7],
+          [65,6],[72,7],[79,7],[80,7],[88,7],[95,6],[104,8],[111,8],[112,8]
+        ]
+      },
+      {
+        id: 10,
+        name: "Nueva Jerusalén",
+        short: "N. Jerusalén",
+        theme: "jerusalem",
+        skyStartTop: "#0891b2", skyStartBot: "#fde68a",
+        skyEndTop: "#06b6d4",   skyEndBot: "#fef9c3",
+        hillA: "#fde047", hillB: "#eab308",
+        groundTop: "#10b981", groundBody: "#f59e0b",
+        water: false,
+        lengthTiles: 145,
+        gaps: [[14, 6], [26, 6], [39, 6], [53, 6], [68, 6], [83, 6], [98, 6], [113, 6]],
+        platforms: [
+          { tx: 8, ty: 11, w: 4 },
+          { tx: 21, ty: 10, w: 4 },
+          { tx: 33, ty: 9, w: 4 },
+          { tx: 47, ty: 8, w: 4 },
+          { tx: 61, ty: 9, w: 4 },
+          { tx: 76, ty: 8, w: 5 },
+          { tx: 91, ty: 9, w: 4 },
+          { tx: 106, ty: 9, w: 4 },
+          { tx: 121, ty: 10, w: 5 }
+        ],
+        grayClouds: [
+          { tx: 15, ty: 11, w: 3 },
+          { tx: 27, ty: 10, w: 3 },
+          { tx: 40, ty: 9, w: 3 },
+          { tx: 54, ty: 9, w: 3 },
+          { tx: 84, ty: 9, w: 3 },
+          { tx: 99, ty: 9, w: 3 },
+          { tx: 114, ty: 10, w: 3 }
+        ],
+        movingPlatforms: [
+          { tx: 69, ty: 9, w: 3, rangeX: 46, speed: 1.25 },
+          { tx: 77, ty: 5, w: 3, rangeX: 36, speed: 1.05 }
+        ],
+        specialStars: [{ tx: 48, ty: 6 }, { tx: 78, ty: 3 }, { tx: 107, ty: 7 }],
+        stars: [
+          [9,9],[16,9],[22,8],[28,8],[34,7],[41,7],[49,6],[55,7],
+          [62,7],[70,7],[77,6],[85,7],[92,7],[100,7],[108,7],[115,8],[122,8],[123,8]
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 2. RETRO 8-BIT CHIPTUNE MUSIC & SFX ENGINE (Web Audio API)
+    // =========================================================================
+    class ChiptuneAudio {
+      constructor() {
+        this.ctx = null;
+        this.musicEnabled = true;
+        this.sfxEnabled = true;
+        this.currentSong = "libreSoy";
+        this.isPlaying = false;
+        this.stepIndex = 0;
+        this.nextNoteTime = 0;
+        this.timerId = null;
+        this.activeNodes = new Set();
+
+        // Note frequencies helper
+        this.freq = {};
+        const names = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        for (let oct = 1; oct <= 7; oct++) {
+          for (let i = 0; i < 12; i++) {
+            const midi = (oct + 1) * 12 + i;
+            this.freq[names[i] + oct] = 440 * Math.pow(2, (midi - 69) / 12);
+          }
+        }
+
+        // Track 1: "Libre Soy" inspired upbeat 128 BPM praise anthem (C Major: C - G - Am - F)
+        this.songs = {
+          libreSoy: {
+            bpm: 128,
+            steps: 64,
+            // Bright soaring anthem melody
+            lead: [
+              "E5", null, "G5", null, "C6", null, "G5", "A5",
+              "G5", null, "E5", null, "D5", null, "E5", null,
+              "D5", null, "G5", null, "B5", null, "G5", "A5",
+              "G5", null, "D5", null, "B4", null, "D5", null,
+              "C5", null, "E5", null, "A5", null, "G5", "E5",
+              "A5", null, "C6", null, "B5", null, "A5", null,
+              "F5", null, "A5", null, "C6", null, "A5", "G5",
+              "F5", "G5", "A5", "C6", "D6", null, "G5", null
+            ],
+            // Shimmering praise synth arp
+            arp: [
+              "C4","E4","G4","C5","C4","E4","G4","C5","C4","E4","G4","C5","C4","E4","G4","C5",
+              "G3","B3","D4","G4","G3","B3","D4","G4","G3","B3","D4","G4","G3","B3","D4","G4",
+              "A3","C4","E4","A4","A3","C4","E4","A4","A3","C4","E4","A4","A3","C4","E4","A4",
+              "F3","A3","C4","F4","F3","A3","C4","F4","G3","B3","D4","G4","G3","B3","D4","G4"
+            ],
+            // Driving modern worship bassline
+            bass: [
+              "C2",null,"C3",null,"C2",null,"C3",null,"C2",null,"C3",null,"C2","C3","G2",null,
+              "G2",null,"G3",null,"G2",null,"G3",null,"G2",null,"G3",null,"G2","G3","D2",null,
+              "A2",null,"A3",null,"A2",null,"A3",null,"A2",null,"A3",null,"A2","A3","E2",null,
+              "F2",null,"F3",null,"F2",null,"F3",null,"G2",null,"G3",null,"G2","G3","B2",null
+            ]
+          },
+          // Track 2: "Júbilo / Alaba" inspired 132 BPM joyful celebration (D Major: D - A - Bm - G)
+          jubilo: {
+            bpm: 132,
+            steps: 64,
+            lead: [
+              "D5","D5","F#5",null,"A5",null,"D6",null,"A5",null,"F#5","A5","D5",null,"E5",null,
+              "E5","E5","A5",null,"C#6",null,"A5",null,"E5",null,"C#5","E5","A5",null,null,null,
+              "F#5","F#5","B5",null,"D6",null,"B5",null,"F#5",null,"D5","F#5","B5",null,"A5",null,
+              "G5",null,"B5",null,"D6",null,"B5","G5","A5",null,"E5","F#5","G5","A5","C#6",null
+            ],
+            arp: [
+              "D4","F#4","A4","D5","D4","F#4","A4","D5","D4","F#4","A4","D5","D4","F#4","A4","D5",
+              "A3","C#4","E4","A4","A3","C#4","E4","A4","A3","C#4","E4","A4","A3","C#4","E4","A4",
+              "B3","D4","F#4","B4","B3","D4","F#4","B4","B3","D4","F#4","B4","B3","D4","F#4","B4",
+              "G3","B3","D4","G4","G3","B3","D4","G4","A3","C#4","E4","A4","A3","C#4","E4","A4"
+            ],
+            bass: [
+              "D2","D2","D3",null,"D2",null,"D3","D2","D2","D2","D3",null,"D2","F#2","A2",null,
+              "A2","A2","A3",null,"A2",null,"A3","A2","A2","A2","A3",null,"A2","C#3","E3",null,
+              "B2","B2","B3",null,"B2",null,"B3","B2","B2","B2","B3",null,"B2","F#2","D2",null,
+              "G2","G2","G3",null,"G2","G3","A2",null,"A2","A2","A3",null,"A2","E2","A2",null
+            ]
+          }
+        };
+      }
+
+      ensureContext() {
+        if (!this.ctx) {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return null;
+          this.ctx = new AC();
+        }
+        if (this.ctx.state === "suspended") {
+          this.ctx.resume().catch(() => {});
+        }
+        return this.ctx;
+      }
+
+      setSong(songKey) {
+        if (!this.songs[songKey]) return;
+        this.currentSong = songKey;
+        if (this.isPlaying) {
+          this.stopMusic();
+          this.startMusic();
+        }
+      }
+
+      startMusic() {
+        if (!this.musicEnabled) return;
+        const ctx = this.ensureContext();
+        if (!ctx) return;
+        if (this.isPlaying) return;
+        this.isPlaying = true;
+        this.stepIndex = 0;
+        this.nextNoteTime = ctx.currentTime + 0.05;
+        this.timerId = setInterval(() => this._scheduler(), 25);
+      }
+
+      stopMusic() {
+        this.isPlaying = false;
+        if (this.timerId) {
+          clearInterval(this.timerId);
+          this.timerId = null;
+        }
+        // Immediately silence any scheduled/active music oscillators
+        for (const node of this.activeNodes) {
+          try {
+            node.stop(0);
+            node.disconnect();
+          } catch (_) {}
+        }
+        this.activeNodes.clear();
+      }
+
+      _scheduler() {
+        if (!this.isPlaying || !this.musicEnabled || !this.ctx) return;
+        const song = this.songs[this.currentSong];
+        const stepDur = 60 / song.bpm / 4; // 16th note
+        while (this.nextNoteTime < this.ctx.currentTime + 0.12) {
+          this._playStep(song, this.stepIndex, this.nextNoteTime, stepDur);
+          this.nextNoteTime += stepDur;
+          this.stepIndex = (this.stepIndex + 1) % song.steps;
+        }
+      }
+
+      _playOsc(type, freq, startTime, duration, volume, slideTo = null, trackActive = true) {
+        if (!this.ctx || !freq) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, startTime);
+        if (slideTo) {
+          osc.frequency.exponentialRampToValueAtTime(Math.max(20, slideTo), startTime + duration);
+        }
+        gain.gain.setValueAtTime(0.0001, startTime);
+        gain.gain.linearRampToValueAtTime(volume, startTime + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        if (trackActive) {
+          this.activeNodes.add(osc);
+          osc.onended = () => this.activeNodes.delete(osc);
+        }
+
+        osc.start(startTime);
+        osc.stop(startTime + duration + 0.02);
+      }
+
+      _playNoise(startTime, duration, volume, highpass = 2000) {
+        if (!this.ctx) return;
+        const bufferSize = Math.max(1, Math.floor(this.ctx.sampleRate * duration));
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "highpass";
+        filter.frequency.value = highpass;
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(volume, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        this.activeNodes.add(noise);
+        noise.onended = () => this.activeNodes.delete(noise);
+        noise.start(startTime);
+        noise.stop(startTime + duration + 0.01);
+      }
+
+      _playStep(song, idx, t, stepDur) {
+        const leadNote = song.lead[idx];
+        const arpNote = song.arp[idx];
+        const bassNote = song.bass[idx];
+
+        if (leadNote && this.freq[leadNote]) {
+          this._playOsc("square", this.freq[leadNote], t, stepDur * 1.45, 0.065);
+        }
+        if (arpNote && this.freq[arpNote]) {
+          this._playOsc("square", this.freq[arpNote], t, stepDur * 0.75, 0.026);
+        }
+        if (bassNote && this.freq[bassNote]) {
+          this._playOsc("triangle", this.freq[bassNote], t, stepDur * 0.95, 0.105);
+        }
+
+        // Upbeat 4-on-the-floor praise drums!
+        if (idx % 4 === 0) {
+          // Kick
+          this._playOsc("triangle", 130, t, 0.09, 0.12, 38);
+        }
+        if (idx % 8 === 4) {
+          // Snare
+          this._playNoise(t, 0.08, 0.045, 1200);
+          this._playOsc("triangle", 210, t, 0.06, 0.05, 95);
+        } else if (idx % 2 === 1) {
+          // Crisp off-beat hi-hat
+          this._playNoise(t, 0.03, 0.018, 5200);
+        }
+      }
+
+      // Retro Sound Effects
+      playJump() {
+        if (!this.sfxEnabled) return;
+        const ctx = this.ensureContext();
+        if (!ctx) return;
+        const t = ctx.currentTime;
+        this._playOsc("square", 260, t, 0.14, 0.08, 620, false);
+      }
+
+      playStar() {
+        if (!this.sfxEnabled) return;
+        const ctx = this.ensureContext();
+        if (!ctx) return;
+        const t = ctx.currentTime;
+        const notes = ["C6", "E6", "G6", "C7"];
+        notes.forEach((n, i) => {
+          this._playOsc("square", this.freq[n], t + i * 0.045, 0.11, 0.07, null, false);
+        });
+      }
+
+      playSpecialStar() {
+        if (!this.sfxEnabled) return;
+        const ctx = this.ensureContext();
+        if (!ctx) return;
+        const t = ctx.currentTime;
+        const notes = ["C5", "E5", "G5", "C6", "E6", "G6", "C7"];
+        notes.forEach((n, i) => {
+          this._playOsc("square", this.freq[n], t + i * 0.055, 0.18, 0.08, null, false);
+        });
+      }
+
+      playStaff() {
+        if (!this.sfxEnabled) return;
+        const ctx = this.ensureContext();
+        if (!ctx) return;
+        const t = ctx.currentTime;
+        this._playOsc("triangle", 660, t, 0.12, 0.09, 1320, false);
+        this._playOsc("square", 990, t + 0.02, 0.1, 0.05, 1580, false);
+      }
+
+      playPurifyCloud() {
+        if (!this.sfxEnabled) return;
+        const ctx = this.ensureContext();
+        if (!ctx) return;
+        const t = ctx.currentTime;
+        ["G5", "B5", "D6", "G6"].forEach((n, i) => {
+          this._playOsc("triangle", this.freq[n], t + i * 0.04, 0.14, 0.09, null, false);
+        });
+      }
+
+      playVoidFall() {
+        if (!this.sfxEnabled) return;
+        const ctx = this.ensureContext();
+        if (!ctx) return;
+        const t = ctx.currentTime;
+        ["G4", "F4", "D4", "C4"].forEach((n, i) => {
+          this._playOsc("square", this.freq[n], t + i * 0.11, 0.14, 0.07, null, false);
+        });
+      }
+
+      playLevelClear() {
+        if (!this.sfxEnabled) return;
+        const ctx = this.ensureContext();
+        if (!ctx) return;
+        const t = ctx.currentTime;
+        const fanfare = [
+          ["C5", 0], ["E5", 0.08], ["G5", 0.16],
+          ["C6", 0.25], ["G5", 0.36], ["C6", 0.48]
+        ];
+        fanfare.forEach(([n, offset]) => {
+          this._playOsc("square", this.freq[n], t + offset, 0.22, 0.085, null, false);
+        });
+      }
+    }
+
+    // =========================================================================
+    // 3. PIXEL ART SPRITE GENERATOR (Procedural Retro 8-Bit Matrices)
+    // =========================================================================
+    function buildSprite(rows, palette) {
+      const h = rows.length;
+      const w = rows[0].length;
+      const c = document.createElement("canvas");
+      c.width = w;
+      c.height = h;
+      const g = c.getContext("2d");
+      for (let y = 0; y < h; y++) {
+        const row = rows[y];
+        for (let x = 0; x < w; x++) {
+          const ch = row[x];
+          if (ch !== "." && palette[ch]) {
+            g.fillStyle = palette[ch];
+            g.fillRect(x, y, 1, 1);
+          }
+        }
+      }
+      return c;
+    }
+
+    const JESUS_PAL = {
+      "G": "#ffd700", // Halo gold
+      "g": "#fef08a", // Halo highlight
+      "H": "#6b3a1e", // Chestnut hair & beard
+      "h": "#8b4f2b", // Hair highlight
+      "S": "#fcd3a8", // Warm skin
+      "E": "#1e293b", // Eye
+      "W": "#ffffff", // Luminous white mantle
+      "w": "#e0f2fe", // Mantle light-blue shade
+      "B": "#38bdf8", // Sky-blue tunic
+      "b": "#0284c7", // Tunic shade
+      "F": "#92400e", // Sandals
+      "K": "#fbbf24", // Golden staff glow
+      "T": "#b45309"  // Staff wood
+    };
+
+    // 18x24 Jesus pixel art frames
+    const JESUS_SPRITES = {
+      idle: buildSprite([
+        ".....GGGGGG.......",
+        "....GggggggG......",
+        ".....GGGGGG.......",
+        "......HHHH........",
+        ".....HhHHHH.......",
+        ".....HSSSSH.......",
+        ".....HSESSE.......",
+        ".....HHSHHH.......",
+        "......HHHH........",
+        "....WWWWWWWW......",
+        "...WWBBBBBBWW.....",
+        "..WWwBBBBBBwWW.K..",
+        "..WWBBBBBBBBWW.T..",
+        "..WWwBBBBBBwWW.T..",
+        "...WWBBBBBBWW..T..",
+        "....WBBBBBBW...T..",
+        "....WBBBBBBW...T..",
+        "....WbbBBbbW...T..",
+        "....WbbBBbbW...T..",
+        ".....BBBBBB....T..",
+        ".....BB..BB....T..",
+        ".....FF..FF....T..",
+        "....FFF..FFF......",
+        ".................."
+      ], JESUS_PAL),
+      walk1: buildSprite([
+        ".....GGGGGG.......",
+        "....GggggggG......",
+        ".....GGGGGG.......",
+        "......HHHH........",
+        ".....HhHHHH.......",
+        ".....HSSSSH.......",
+        ".....HSESSE.......",
+        ".....HHSHHH.......",
+        "......HHHH........",
+        "....WWWWWWWW......",
+        "...WWBBBBBBWW.....",
+        "..WWwBBBBBBwWW.K..",
+        "..WWBBBBBBBBWW.T..",
+        "..WWwBBBBBBwWW.T..",
+        "...WWBBBBBBWW..T..",
+        "....WBBBBBBW...T..",
+        "....WbbBBbbW...T..",
+        "....WbbBBbbW...T..",
+        "....BB....BB...T..",
+        "...BB......BB..T..",
+        "..FFF......FFF.T..",
+        "..................",
+        "..................",
+        ".................."
+      ], JESUS_PAL),
+      walk2: buildSprite([
+        ".....GGGGGG.......",
+        "....GggggggG......",
+        ".....GGGGGG.......",
+        "......HHHH........",
+        ".....HhHHHH.......",
+        ".....HSSSSH.......",
+        ".....HSESSE.......",
+        ".....HHSHHH.......",
+        "......HHHH........",
+        "....WWWWWWWW......",
+        "...WWBBBBBBWW.....",
+        "..WWwBBBBBBwWW.K..",
+        "..WWBBBBBBBBWW.T..",
+        "..WWwBBBBBBwWW.T..",
+        "...WWBBBBBBWW..T..",
+        "....WBBBBBBW...T..",
+        "....WbbBBbbW...T..",
+        "....WbbBBbbW...T..",
+        ".....BB..BB....T..",
+        ".....BB..BB....T..",
+        "....FFF..FFF...T..",
+        "..................",
+        "..................",
+        ".................."
+      ], JESUS_PAL),
+      jump: buildSprite([
+        ".....GGGGGG.......",
+        "....GggggggG......",
+        ".....GGGGGG.......",
+        "......HHHH........",
+        ".....HhHHHH.......",
+        ".....HSSSSH.......",
+        ".....HSESSE.......",
+        ".....HHSHHH.......",
+        "......HHHH........",
+        "...WWWWWWWWWW.....",
+        "..WWwBBBBBBwWW.K..",
+        ".WWwBBBBBBBBwWWT..",
+        ".WWBBBBBBBBBBWWT..",
+        "..WWwBBBBBBwWW.T..",
+        "...WWBBBBBBWW..T..",
+        "....WbbBBbbW...T..",
+        "....WbbBBbbW...T..",
+        "....BB....BB...T..",
+        "...FFF....FFF..T..",
+        "..................",
+        "..................",
+        "..................",
+        "..................",
+        ".................."
+      ], JESUS_PAL),
+      attack: buildSprite([
+        ".....GGGGGG.......",
+        "....GggggggG......",
+        ".....GGGGGG.......",
+        "......HHHH........",
+        ".....HhHHHH.......",
+        ".....HSSSSH.......",
+        ".....HSESSE.......",
+        ".....HHSHHH.......",
+        "......HHHH........",
+        "....WWWWWWWW......",
+        "...WWBBBBBBWW..gK.",
+        "..WWwBBBBBBwWWTTTT",
+        "..WWBBBBBBBBWW.gK.",
+        "..WWwBBBBBBwWW....",
+        "...WWBBBBBBWW.....",
+        "....WBBBBBBW......",
+        "....WbbBBbbW......",
+        "....WbbBBbbW......",
+        ".....BB..BB.......",
+        ".....BB..BB.......",
+        "....FFF..FFF......",
+        "..................",
+        "..................",
+        ".................."
+      ], JESUS_PAL)
+    };
+
+    const SHEEP_PAL = {
+      "W": "#ffffff",
+      "w": "#e2e8f0",
+      "c": "#cbd5e1",
+      "F": "#334155",
+      "E": "#ffffff",
+      "P": "#fda4af",
+      "L": "#1e293b"
+    };
+
+    const SHEEP_SPRITES = {
+      idle: buildSprite([
+        "................",
+        "....WWWWWW......",
+        "..WWWWWWWWWW....",
+        ".WWWWWWWWWWWWFF.",
+        "WWWWwWWWWWWWWFEF",
+        "WWWWWWWWWWWWWPFF",
+        "WWwWWWWWWwWWWFF.",
+        ".WWWWWWWWWWWW...",
+        "..wwWWwwWWww....",
+        "...LL....LL.....",
+        "...LL....LL.....",
+        "................"
+      ], SHEEP_PAL),
+      hop: buildSprite([
+        "....WWWWWW......",
+        "..WWWWWWWWWW....",
+        ".WWWWWWWWWWWWFF.",
+        "WWWWwWWWWWWWWFEF",
+        "WWWWWWWWWWWWWPFF",
+        "WWwWWWWWWwWWWFF.",
+        ".WWWWWWWWWWWW...",
+        "..wwWWwwWWww....",
+        "..LL......LL....",
+        "................",
+        "................",
+        "................"
+      ], SHEEP_PAL)
+    };
+
+    const STAR_SPRITE = buildSprite([
+      "......YY......",
+      "......YY......",
+      ".....YGGY.....",
+      "....YYGGYY....",
+      "YYYYYYGGYYYYYY",
+      ".YYYYGGGGYYYY.",
+      "..YYYGGGGYYY..",
+      "...YYGGGGYY...",
+      "...YYGGGGYY...",
+      "..YYY....YYY..",
+      "..YY......YY..",
+      ".YY........YY.",
+      ".............."
+    ], { "Y": "#fde047", "G": "#fffbeb" });
+
+    const SPECIAL_STAR_SPRITE = buildSprite([
+      ".......WW.......",
+      "......YWWY......",
+      ".....YYGGYY.....",
+      "....YYYGGYYY....",
+      "YYYYYYGGGGYYYYYY",
+      ".YYYYGGGGGGYYYY.",
+      "..YYYGGPPGGYYY..",
+      "...YYGGPPGGYY...",
+      "...YYYGGGGYYY...",
+      "..YYYY....YYYY..",
+      "..YYY......YYY..",
+      ".YYY........YYY.",
+      ".YY..........YY.",
+      "................"
+    ], { "Y": "#fbbf24", "G": "#fef08a", "W": "#ffffff", "P": "#f472b6" });
+
+    // =========================================================================
+    // 4. GAME STATE & ENGINE
+    // =========================================================================
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+
+    const audio = new ChiptuneAudio();
+
+    // DOM refs
+    const hudLevel = document.getElementById("hudLevel");
+    const hudScore = document.getElementById("hudScore");
+    const hudStars = document.getElementById("hudStars");
+    const hudBloom = document.getElementById("hudBloom");
+    const hudMagnet = document.getElementById("hudMagnet");
+    const songSelect = document.getElementById("songSelect");
+    const btnMusic = document.getElementById("btnMusic");
+    const btnSfx = document.getElementById("btnSfx");
+    const btnPause = document.getElementById("btnPause");
+    const btnRestartTop = document.getElementById("btnRestartTop");
+    const btnTouchToggle = document.getElementById("btnTouchToggle");
+    const touchControlsEl = document.getElementById("touchControls");
+
+    const verseToast = document.getElementById("verseToast");
+    const toastText = document.getElementById("toastText");
+    const toastRef = document.getElementById("toastRef");
+
+    const overlayTitle = document.getElementById("overlayTitle");
+    const overlayPause = document.getElementById("overlayPause");
+    const overlayVoid = document.getElementById("overlayVoid");
+    const overlayClear = document.getElementById("overlayClear");
+
+    const levelPicker = document.getElementById("levelPicker");
+
+    // Input state
+    const keys = { left: false, right: false, jump: false, staff: false };
+    let jumpBufferedFrames = 0;
+    let staffPressedThisFrame = false;
+
+    const game = {
+      state: "title", // 'title', 'playing', 'paused', 'void', 'clear'
+      selectedStartLevel: 0,
+      levelIdx: 0,
+      totalScore: 0,
+      levelScoreStart: 0,
+      tick: 0,
+      camX: 0,
+      bloomRatio: 0,
+      targetBloom: 0,
+      magnetTimer: 0, // frames remaining (60fps)
+      toastTimer: 0,
+      verseCursor: 0,
+      cloudsPurifiedCount: 0,
+      level: null,
+      player: null,
+      sheep: null,
+      beams: [],
+      particles: [],
+      popTexts: [],
+      flowers: []
+    };
+
+    // =========================================================================
+    // 5. LEVEL LOADING & CONSTRUCTION
+    // =========================================================================
+    function buildLevelRuntime(def) {
+      const cols = def.lengthTiles;
+      const rows = 17; // 17 * 16 = 272 px
+      const groundRow = 14;
+
+      // Solid ground columns
+      const solidCols = new Array(cols).fill(true);
+      for (const [start, len] of def.gaps) {
+        for (let c = start; c < start + len && c < cols; c++) {
+          solidCols[c] = false;
+        }
+      }
+
+      // Build static platform rects
+      const platforms = [];
+      // Merge contiguous ground columns into clean rects
+      let runStart = -1;
+      for (let c = 0; c <= cols; c++) {
+        const isSolid = c < cols && solidCols[c];
+        if (isSolid && runStart === -1) runStart = c;
+        if (!isSolid && runStart !== -1) {
+          platforms.push({
+            x: runStart * TILE,
+            y: groundRow * TILE,
+            w: (c - runStart) * TILE,
+            h: (rows - groundRow) * TILE,
+            kind: "ground"
+          });
+          runStart = -1;
+        }
+      }
+
+      // Elevated platforms
+      for (const p of def.platforms) {
+        platforms.push({
+          x: p.tx * TILE,
+          y: p.ty * TILE,
+          w: p.w * TILE,
+          h: TILE,
+          kind: "ledge"
+        });
+      }
+
+      // Moving golden cloud platforms
+      const movingPlatforms = def.movingPlatforms.map((mp, idx) => ({
+        baseX: mp.tx * TILE,
+        x: mp.tx * TILE,
+        y: mp.ty * TILE,
+        w: mp.w * TILE,
+        h: 12,
+        rangeX: mp.rangeX,
+        speed: mp.speed,
+        phase: idx * 1.4,
+        dx: 0
+      }));
+
+      // Gray Doubt Clouds -> convertible to Safe White Clouds!
+      const clouds = def.grayClouds.map((cl, idx) => ({
+        id: idx,
+        x: cl.tx * TILE,
+        y: cl.ty * TILE,
+        w: cl.w * TILE,
+        h: 14,
+        purified: false,
+        purifyAnim: 0,
+        puffTimer: 0
+      }));
+
+      // Stars
+      const stars = [];
+      for (const [tx, ty] of def.stars) {
+        stars.push({
+          x: tx * TILE + 1,
+          y: ty * TILE,
+          w: 14,
+          h: 14,
+          special: false,
+          collected: false,
+          bobPhase: Math.random() * Math.PI * 2
+        });
+      }
+      for (const sp of def.specialStars) {
+        stars.push({
+          x: sp.tx * TILE,
+          y: sp.ty * TILE,
+          w: 16,
+          h: 16,
+          special: true,
+          collected: false,
+          bobPhase: Math.random() * Math.PI * 2
+        });
+      }
+
+      // Decorative flowers anchored to ground & ledges (they bloom with bloomRatio!)
+      const flowers = [];
+      const flowerColors = ["#f43f5e", "#ec4899", "#fbbf24", "#38bdf8", "#a855f7", "#fb923c"];
+      for (let c = 2; c < cols - 6; c++) {
+        if (solidCols[c] && (c % 2 === 0 || c % 5 === 0)) {
+          flowers.push({
+            x: c * TILE + 4 + ((c * 7) % 8),
+            y: groundRow * TILE,
+            color: flowerColors[c % flowerColors.length],
+            threshold: ((c % 10) / 11),
+            open: 0
+          });
+        }
+      }
+      for (const p of def.platforms) {
+        for (let i = 0; i < p.w; i++) {
+          if (i % 2 === 0) {
+            flowers.push({
+              x: (p.tx + i) * TILE + 5,
+              y: p.ty * TILE,
+              color: flowerColors[(p.tx + i) % flowerColors.length],
+              threshold: (((p.tx + i) % 9) / 10),
+              open: 0
+            });
+          }
+        }
+      }
+
+      // Goal Gate at end of level
+      const goal = {
+        x: (cols - 5) * TILE,
+        y: (groundRow - 3) * TILE,
+        w: 32,
+        h: 48
+      };
+
+      return {
+        def,
+        cols,
+        widthPx: cols * TILE,
+        solidCols,
+        groundRow,
+        platforms,
+        movingPlatforms,
+        clouds,
+        stars,
+        flowers,
+        goal,
+        totalStars: stars.length,
+        collectedStars: 0
+      };
+    }
+
+    function startLevel(idx, preserveScore = false) {
+      game.levelIdx = idx;
+      if (!preserveScore) {
+        game.totalScore = 0;
+      }
+      game.levelScoreStart = game.totalScore;
+      const def = LEVEL_DEFS[idx];
+      game.level = buildLevelRuntime(def);
+      game.camX = 0;
+      game.bloomRatio = 0;
+      game.targetBloom = 0;
+      game.magnetTimer = 0;
+      game.cloudsPurifiedCount = 0;
+      game.beams = [];
+      game.particles = [];
+      game.popTexts = [];
+      hideToast();
+
+      game.player = {
+        x: 36,
+        y: (game.level.groundRow - 2) * TILE,
+        w: 14,
+        h: 22,
+        vx: 0,
+        vy: 0,
+        facing: 1,
+        onGround: false,
+        coyoteFrames: 0,
+        attackTimer: 0,
+        attackCooldown: 0,
+        walkFrame: 0
+      };
+
+      game.sheep = {
+        x: 16,
+        y: (game.level.groundRow - 1) * TILE - 12,
+        w: 16,
+        h: 12,
+        vx: 0,
+        vy: 0,
+        facing: 1,
+        onGround: false,
+        hopPhase: 0,
+        celebrateTimer: 0
+      };
+
+      game.state = "playing";
+      btnPause.textContent = "⏸ Pausar";
+      hideAllOverlays();
+      updateHUD();
+      audio.ensureContext();
+      if (audio.musicEnabled) {
+        audio.stopMusic();
+        audio.startMusic();
+      }
+    }
+
+    // =========================================================================
+    // 6. COLLISION & HELPERS
+    // =========================================================================
+    function rectsOverlap(a, b) {
+      return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+    }
+
+    function getSolidSurfaces(level) {
+      const list = [...level.platforms];
+      for (const mp of level.movingPlatforms) {
+        list.push({ x: mp.x, y: mp.y, w: mp.w, h: mp.h, kind: "moving", dx: mp.dx });
+      }
+      for (const cl of level.clouds) {
+        if (cl.purified) {
+          list.push({ x: cl.x, y: cl.y, w: cl.w, h: cl.h, kind: "whiteCloud" });
+        }
+      }
+      return list;
+    }
+
+    function spawnParticles(x, y, colors, count = 10, speed = 2.2) {
+      for (let i = 0; i < count; i++) {
+        const ang = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+        const spd = (0.4 + Math.random() * 0.8) * speed;
+        game.particles.push({
+          x,
+          y,
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd - 0.6,
+          size: Math.random() < 0.5 ? 2 : 3,
+          color: colors[i % colors.length],
+          life: 24 + Math.floor(Math.random() * 18),
+          maxLife: 42
+        });
+      }
+    }
+
+    function spawnPopText(x, y, text, color = "#fef08a", life = 52) {
+      game.popTexts.push({ x, y, text, color, life, maxLife: life });
+    }
+
+    function showPromiseToast(verse) {
+      toastText.textContent = `"${verse.text}"`;
+      toastRef.textContent = `— ${verse.ref}`;
+      verseToast.classList.add("visible");
+      game.toastTimer = 330; // ~5.5 seconds
+    }
+
+    function hideToast() {
+      verseToast.classList.remove("visible");
+      game.toastTimer = 0;
+    }
+
+    function hideAllOverlays() {
+      overlayTitle.classList.remove("active");
+      overlayPause.classList.remove("active");
+      overlayVoid.classList.remove("active");
+      overlayClear.classList.remove("active");
+    }
+
+    function updateHUD() {
+      const lvl = game.level;
+      if (!lvl) return;
+      hudLevel.textContent = `Nivel ${lvl.def.id}/10 · ${lvl.def.short}`;
+      hudScore.textContent = `⭐ ${String(game.totalScore).padStart(5, "0")}`;
+      hudStars.textContent = `Estrellas: ${lvl.collectedStars}/${lvl.totalStars}`;
+      const bloomPct = Math.round(game.targetBloom * 100);
+      hudBloom.textContent = `🌸 ${bloomPct}%`;
+
+      if (game.magnetTimer > 0) {
+        hudMagnet.style.display = "inline-flex";
+        hudMagnet.textContent = `🧲 Atracción: ${Math.ceil(game.magnetTimer / 60)}s`;
+      } else {
+        hudMagnet.style.display = "none";
+      }
+    }
+
+    // =========================================================================
+    // 7. FIXED-TIMESTEP GAME UPDATE
+    // =========================================================================
+    function updateGame() {
+      game.tick++;
+      if (game.state !== "playing") return;
+
+      const lvl = game.level;
+      const p = game.player;
+      const s = game.sheep;
+
+      // Toast countdown
+      if (game.toastTimer > 0) {
+        game.toastTimer--;
+        if (game.toastTimer === 0) hideToast();
+      }
+
+      // Magnet countdown
+      if (game.magnetTimer > 0) {
+        game.magnetTimer--;
+      }
+
+      // Smoothly interpolate bloomRatio
+      game.bloomRatio += (game.targetBloom - game.bloomRatio) * 0.06;
+      for (const fl of lvl.flowers) {
+        const shouldOpen = game.bloomRatio >= fl.threshold && game.bloomRatio > 0.02;
+        if (shouldOpen && fl.open < 1) {
+          fl.open = Math.min(1, fl.open + 0.05);
+        }
+      }
+
+      // 1. Update Moving Platforms
+      for (const mp of lvl.movingPlatforms) {
+        const prevX = mp.x;
+        mp.x = mp.baseX + Math.sin(game.tick * 0.025 * mp.speed + mp.phase) * mp.rangeX;
+        mp.dx = mp.x - prevX;
+      }
+
+      // 2. Player Horizontal Movement (Mario-like crisp acceleration & friction)
+      const accel = p.onGround ? 0.34 : 0.24;
+      const maxSpeed = 2.65;
+      const friction = p.onGround ? 0.80 : 0.92;
+
+      if (keys.left && !keys.right) {
+        p.vx = Math.max(-maxSpeed, p.vx - accel);
+        p.facing = -1;
+      } else if (keys.right && !keys.left) {
+        p.vx = Math.min(maxSpeed, p.vx + accel);
+        p.facing = 1;
+      } else {
+        p.vx *= friction;
+        if (Math.abs(p.vx) < 0.08) p.vx = 0;
+      }
+
+      // Jump buffering + Coyote Time
+      if (jumpBufferedFrames > 0) jumpBufferedFrames--;
+      if (p.onGround) {
+        p.coyoteFrames = 7;
+      } else if (p.coyoteFrames > 0) {
+        p.coyoteFrames--;
+      }
+
+      if (jumpBufferedFrames > 0 && p.coyoteFrames > 0) {
+        p.vy = -7.2;
+        p.onGround = false;
+        p.coyoteFrames = 0;
+        jumpBufferedFrames = 0;
+        audio.playJump();
+        spawnParticles(p.x + p.w / 2, p.y + p.h, ["#ffffff", "#bae6fd"], 5, 1.4);
+      }
+
+      // Variable jump height (release jump early for shorter hop)
+      if (!keys.jump && p.vy < -3.0) {
+        p.vy *= 0.85;
+      }
+
+      // Gravity
+      p.vy = Math.min(MAX_FALL_SPEED, p.vy + GRAVITY);
+
+      // Cayado de Luz attack
+      if (p.attackCooldown > 0) p.attackCooldown--;
+      if (p.attackTimer > 0) p.attackTimer--;
+
+      if (staffPressedThisFrame && p.attackCooldown === 0) {
+        p.attackTimer = 14;
+        p.attackCooldown = 16;
+        audio.playStaff();
+        const beamX = p.facing === 1 ? p.x + p.w + 2 : p.x - 10;
+        const beamY = p.y + 8;
+        game.beams.push({
+          x: beamX,
+          y: beamY,
+          vx: p.facing * 5.2,
+          life: 30,
+          w: 12,
+          h: 10
+        });
+        spawnParticles(beamX, beamY + 4, ["#fde047", "#ffffff", "#67e8f9"], 8, 2.0);
+      }
+      staffPressedThisFrame = false;
+
+      // Move Player & Collide against Solid Surfaces
+      const solids = getSolidSurfaces(lvl);
+
+      // Horizontal step
+      p.x += p.vx;
+      if (p.x < 0) { p.x = 0; p.vx = 0; }
+      if (p.x + p.w > lvl.widthPx) { p.x = lvl.widthPx - p.w; p.vx = 0; }
+
+      for (const sld of solids) {
+        if (sld.kind === "whiteCloud" || sld.kind === "moving") continue; // One-way top platforms!
+        if (rectsOverlap(p, sld)) {
+          if (p.vx > 0) {
+            p.x = sld.x - p.w;
+            p.vx = 0;
+          } else if (p.vx < 0) {
+            p.x = sld.x + sld.w;
+            p.vx = 0;
+          }
+        }
+      }
+
+      // Vertical step
+      const prevBottom = p.y + p.h;
+      p.y += p.vy;
+      p.onGround = false;
+
+      for (const sld of solids) {
+        if (sld.kind === "whiteCloud" || sld.kind === "moving") {
+          // One-way platform collision when falling onto top
+          if (
+            p.vy >= 0 &&
+            prevBottom <= sld.y + 6 &&
+            p.x + p.w > sld.x + 1 &&
+            p.x < sld.x + sld.w - 1 &&
+            p.y + p.h >= sld.y
+          ) {
+            p.y = sld.y - p.h;
+            p.vy = 0;
+            p.onGround = true;
+            if (sld.dx) {
+              p.x += sld.dx;
+            }
+          }
+        } else {
+          // Ground & solid ledges (allow jumping up through thin ledges like Mario? Let's make ledges one-way from below OR solid! Making ledges one-way from below feels great and avoids bonking head on low bridges!)
+          if (sld.kind === "ledge") {
+            if (
+              p.vy >= 0 &&
+              prevBottom <= sld.y + 6 &&
+              p.x + p.w > sld.x + 1 &&
+              p.x < sld.x + sld.w - 1 &&
+              p.y + p.h >= sld.y
+            ) {
+              p.y = sld.y - p.h;
+              p.vy = 0;
+              p.onGround = true;
+            }
+          } else if (rectsOverlap(p, sld)) {
+            if (p.vy > 0) {
+              p.y = sld.y - p.h;
+              p.vy = 0;
+              p.onGround = true;
+            } else if (p.vy < 0) {
+              p.y = sld.y + sld.h;
+              p.vy = 0;
+            }
+          }
+        }
+      }
+
+      // Unpurified Gray Doubt Clouds feedback (intangible misty doubt cloud!)
+      for (const cl of lvl.clouds) {
+        if (cl.purifyAnim > 0) cl.purifyAnim--;
+        if (cl.puffTimer > 0) cl.puffTimer--;
+        if (!cl.purified && rectsOverlap(p, cl) && cl.puffTimer === 0) {
+          cl.puffTimer = 26;
+          spawnParticles(cl.x + cl.w / 2, cl.y + 6, ["#94a3b8", "#64748b", "#cbd5e1"], 6, 1.5);
+          spawnPopText(cl.x + cl.w / 2, cl.y - 6, "¡Usa Cayado!", "#cbd5e1", 34);
+        }
+      }
+
+      // Walk animation frame
+      if (Math.abs(p.vx) > 0.25 && p.onGround) {
+        p.walkFrame += Math.abs(p.vx) * 0.14;
+      } else {
+        p.walkFrame = 0;
+      }
+
+      // 3. Check Immediate Fall into Void!
+      if (p.y > SCREEN_H + 14) {
+        triggerVoidFall();
+        return;
+      }
+
+      // 4. Update Cayado de Luz Beams -> Purify Gray Doubt Clouds
+      for (let i = game.beams.length - 1; i >= 0; i--) {
+        const b = game.beams[i];
+        b.x += b.vx;
+        b.life--;
+        if (game.tick % 2 === 0) {
+          game.particles.push({
+            x: b.x + 5,
+            y: b.y + 4 + (Math.random() * 4 - 2),
+            vx: -b.vx * 0.12,
+            vy: (Math.random() - 0.5) * 0.5,
+            size: 2,
+            color: Math.random() < 0.5 ? "#fde047" : "#ffffff",
+            life: 12,
+            maxLife: 12
+          });
+        }
+
+        // Check collision with Gray Doubt Clouds
+        for (const cl of lvl.clouds) {
+          if (!cl.purified && rectsOverlap(b, cl)) {
+            cl.purified = true;
+            cl.purifyAnim = 20;
+            game.cloudsPurifiedCount++;
+            game.totalScore += 50;
+            audio.playPurifyCloud();
+            spawnParticles(cl.x + cl.w / 2, cl.y + 6, ["#ffffff", "#fef08a", "#38bdf8"], 16, 2.8);
+            spawnPopText(cl.x + cl.w / 2, cl.y - 8, "¡Nube Pura! +50", "#ffffff", 48);
+            b.life = 0;
+            updateHUD();
+            break;
+          }
+        }
+
+        if (b.life <= 0) {
+          game.beams.splice(i, 1);
+        }
+      }
+
+      // 5. Update Companion Fluffy Sheep (Follows, jumps alongside, celebrates!)
+      updateSheep(s, p, solids);
+
+      // 6. Update Stars & Special Star Magnet Attraction
+      const attractRadius = game.magnetTimer > 0 ? 150 : 20;
+      const pCx = p.x + p.w / 2;
+      const pCy = p.y + p.h / 2;
+
+      for (const st of lvl.stars) {
+        if (st.collected) continue;
+        const sCx = st.x + st.w / 2;
+        const sCy = st.y + st.h / 2;
+        const dx = pCx - sCx;
+        const dy = pCy - sCy;
+        const dist = Math.hypot(dx, dy);
+
+        // Magnet pulls normal stars (and pulls any star close enough)
+        if (dist < attractRadius && dist > 1) {
+          const pull = game.magnetTimer > 0 ? 4.2 : 1.8;
+          st.x += (dx / dist) * pull;
+          st.y += (dy / dist) * pull;
+        }
+
+        if (dist < 16 || rectsOverlap(p, st)) {
+          st.collected = true;
+          lvl.collectedStars++;
+
+          if (st.special) {
+            game.totalScore += 300;
+            game.magnetTimer = 720; // 12 seconds of boosted star attraction
+            audio.playSpecialStar();
+            const verse = PROMISE_VERSES[game.verseCursor % PROMISE_VERSES.length];
+            game.verseCursor++;
+            showPromiseToast(verse);
+            spawnParticles(sCx, sCy, ["#fde047", "#f472b6", "#38bdf8", "#ffffff"], 22, 3.2);
+            spawnPopText(sCx, sCy - 10, "¡PROMESA +300!", "#f472b6", 65);
+          } else {
+            game.totalScore += 100;
+            audio.playStar();
+            spawnParticles(sCx, sCy, ["#fde047", "#fef9c3", "#34d399"], 12, 2.3);
+            spawnPopText(sCx, sCy - 8, "+100", "#fde047", 40);
+          }
+
+          // Sheep celebrates with "¡ALELUYA!"
+          s.celebrateTimer = 75;
+          if (s.onGround) {
+            s.vy = -4.2;
+            s.onGround = false;
+          }
+          spawnPopText(s.x + s.w / 2, s.y - 12, "¡ALELUYA!", "#ffffff", 62);
+
+          // Stage blooms & sky clears!
+          game.targetBloom = lvl.totalStars > 0 ? lvl.collectedStars / lvl.totalStars : 1;
+          updateHUD();
+        }
+      }
+
+      // 7. Update Particles & Floating Texts
+      for (let i = game.particles.length - 1; i >= 0; i--) {
+        const pt = game.particles[i];
+        pt.x += pt.vx;
+        pt.y += pt.vy;
+        pt.vy += 0.04;
+        pt.life--;
+        if (pt.life <= 0) game.particles.splice(i, 1);
+      }
+
+      for (let i = game.popTexts.length - 1; i >= 0; i--) {
+        const tx = game.popTexts[i];
+        tx.y -= 0.45;
+        tx.life--;
+        if (tx.life <= 0) game.popTexts.splice(i, 1);
+      }
+
+      // Ambient warm sparkles when stage blooms
+      if (game.bloomRatio > 0.15 && game.tick % 9 === 0) {
+        game.particles.push({
+          x: game.camX + Math.random() * SCREEN_W,
+          y: SCREEN_H - 12,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: -0.6 - Math.random() * 0.7,
+          size: 2,
+          color: Math.random() < 0.5 ? "#fef08a" : "#ffffff",
+          life: 45,
+          maxLife: 45
+        });
+      }
+
+      // 8. Smooth Camera Tracking
+      const desiredCamX = Math.max(0, Math.min(lvl.widthPx - SCREEN_W, p.x - SCREEN_W * 0.34));
+      game.camX += (desiredCamX - game.camX) * 0.14;
+
+      // 9. Check Level Goal Completion
+      if (rectsOverlap(p, lvl.goal)) {
+        triggerLevelClear();
+      }
+    }
+
+    function updateSheep(s, p, solids) {
+      if (s.celebrateTimer > 0) s.celebrateTimer--;
+
+      const targetX = p.x - p.facing * 24;
+      const dx = targetX - s.x;
+      const dy = p.y + p.h - (s.y + s.h);
+
+      // Gentle follow velocity
+      if (Math.abs(dx) > 5) {
+        const speed = Math.min(2.75, Math.abs(dx) * 0.12 + 0.6);
+        s.vx = Math.sign(dx) * speed;
+        s.facing = Math.sign(dx);
+        s.hopPhase += 0.25;
+      } else {
+        s.vx *= 0.7;
+        s.facing = p.facing;
+      }
+
+      // Jump alongside Jesus when Jesus jumps or when Sheep needs to reach higher ledge / cross pit!
+      const farBehind = Math.hypot(p.x - s.x, p.y - s.y) > 135;
+      if (farBehind) {
+        // Fluffy magical hop right back beside the Shepherd so she never gets stuck in a pit!
+        s.x = p.x - p.facing * 22;
+        s.y = p.y - 10;
+        s.vy = -2.2;
+        spawnParticles(s.x + 8, s.y + 8, ["#ffffff", "#fef08a"], 6, 1.5);
+      } else {
+        if (s.onGround && ((p.vy < -4.5 && Math.abs(dx) < 60) || dy < -12 || (Math.abs(dx) > 28 && !hasGroundAhead(s, solids)))) {
+          s.vy = -6.3;
+          s.onGround = false;
+        }
+      }
+
+      s.vy = Math.min(MAX_FALL_SPEED, s.vy + GRAVITY * 0.95);
+      s.x += s.vx;
+      const prevBottom = s.y + s.h;
+      s.y += s.vy;
+      s.onGround = false;
+
+      for (const sld of solids) {
+        if (
+          s.vy >= 0 &&
+          prevBottom <= sld.y + 8 &&
+          s.x + s.w > sld.x + 1 &&
+          s.x < sld.x + sld.w - 1 &&
+          s.y + s.h >= sld.y
+        ) {
+          s.y = sld.y - s.h;
+          s.vy = 0;
+          s.onGround = true;
+          if (sld.dx) s.x += sld.dx;
+        }
+      }
+
+      // Prevent sheep from falling permanently off screen
+      if (s.y > SCREEN_H + 8) {
+        s.x = p.x - p.facing * 20;
+        s.y = p.y - 12;
+        s.vy = -2;
+      }
+    }
+
+    function hasGroundAhead(ent, solids) {
+      const probeX = ent.x + ent.w / 2 + ent.facing * 12;
+      const probeY = ent.y + ent.h + 10;
+      for (const sld of solids) {
+        if (probeX >= sld.x && probeX <= sld.x + sld.w && probeY >= sld.y && probeY <= sld.y + 24) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // =========================================================================
+    // 8. STATE TRANSITIONS (VOID FALL, PAUSE, LEVEL CLEAR)
+    // =========================================================================
+    function triggerVoidFall() {
+      game.state = "void";
+      // Requirement: stop music immediately on void fall!
+      audio.stopMusic();
+      audio.playVoidFall();
+      hideToast();
+      overlayVoid.classList.add("active");
+    }
+
+    function triggerLevelClear() {
+      game.state = "clear";
+      audio.stopMusic();
+      audio.playLevelClear();
+      hideToast();
+
+      const lvl = game.level;
+      const isFinal = game.levelIdx === LEVEL_DEFS.length - 1;
+      const verse = ENCOURAGEMENT_VERSES[game.levelIdx % ENCOURAGEMENT_VERSES.length];
+
+      document.getElementById("clearTitle").textContent = isFinal
+        ? "👑 ¡VICTORIA EN NUEVA JERUSALÉN! 👑"
+        : "🌈 ¡NIVEL COMPLETADO! 🌈";
+      document.getElementById("clearSubtitle").textContent = isFinal
+        ? "Has completado los 10 paisajes bíblicos junto a Jesús el Buen Pastor"
+        : `${lvl.def.name} — ¡Camino lleno de luz!`;
+
+      document.getElementById("clearScore").textContent = game.totalScore;
+      document.getElementById("clearStars").textContent = `${lvl.collectedStars}/${lvl.totalStars}`;
+      document.getElementById("clearBloom").textContent = `${Math.round(game.targetBloom * 100)}%`;
+      document.getElementById("clearVerseText").textContent = `"${verse.text}"`;
+      document.getElementById("clearVerseRef").textContent = `— ${verse.ref}`;
+
+      const btnNext = document.getElementById("btnNextLevel");
+      btnNext.textContent = isFinal ? "✨ Jugar Desde el Nivel 1" : "➡ Siguiente Paisaje";
+
+      overlayClear.classList.add("active");
+    }
+
+    function togglePause() {
+      if (game.state === "playing") {
+        game.state = "paused";
+        audio.stopMusic();
+        document.getElementById("pauseLevelName").textContent =
+          `Nivel ${game.level.def.id}/10: ${game.level.def.name}`;
+        overlayPause.classList.add("active");
+        btnPause.textContent = "▶ Reanudar";
+      } else if (game.state === "paused") {
+        game.state = "playing";
+        overlayPause.classList.remove("active");
+        btnPause.textContent = "⏸ Pausar";
+        if (audio.musicEnabled) audio.startMusic();
+      }
+    }
+
+    // =========================================================================
+    // 9. PIXEL ART RENDERER (Vibrant Skies, Rainbows, Parallax, Sprites)
+    // =========================================================================
+    function lerpColor(hexA, hexB, t) {
+      const a = parseInt(hexA.slice(1), 16);
+      const b = parseInt(hexB.slice(1), 16);
+      const ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
+      const br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
+      const r = Math.round(ar + (br - ar) * t);
+      const g = Math.round(ag + (bg - ag) * t);
+      const bl = Math.round(ab + (bb - ab) * t);
+      return `rgb(${r},${g},${bl})`;
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, SCREEN_W, SCREEN_H);
+      const lvl = game.level;
+      if (!lvl) {
+        drawTitleBackdrop();
+        return;
+      }
+
+      const def = lvl.def;
+      const b = Math.max(0, Math.min(1, game.bloomRatio));
+      const camX = Math.floor(game.camX);
+
+      // 1. Dynamic Turquoise & Golden Sky (brightens as Estrellas de Promesa are collected!)
+      const topSky = lerpColor(def.skyStartTop, def.skyEndTop, b);
+      const botSky = lerpColor(def.skyStartBot, def.skyEndBot, b);
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, SCREEN_H);
+      skyGrad.addColorStop(0, topSky);
+      skyGrad.addColorStop(1, botSky);
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
+
+      // Golden Radiant Sun + Rays
+      const sunX = 390 - Math.floor(camX * 0.05);
+      const sunY = 48 - Math.floor(b * 10);
+      const sunRadius = 20 + Math.floor(b * 6);
+      ctx.fillStyle = `rgba(254, 240, 138, ${0.22 + b * 0.25})`;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunRadius + 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#fde047";
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#fffbeb";
+      ctx.beginPath();
+      ctx.arc(sunX - 3, sunY - 3, Math.floor(sunRadius * 0.55), 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Vibrant Joyful Rainbow (grows brighter with bloom!)
+      const rbAlpha = 0.22 + b * 0.55;
+      const rbX = 240 - Math.floor(camX * 0.12);
+      const rbY = 205;
+      const rbColors = ["#fb7185", "#fb923c", "#facc15", "#34d399", "#38bdf8", "#a78bfa"];
+      ctx.save();
+      ctx.globalAlpha = rbAlpha;
+      rbColors.forEach((col, i) => {
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(rbX, rbY, 136 - i * 4, Math.PI, 0);
+        ctx.stroke();
+      });
+      ctx.restore();
+
+      // 3. Fluffy Background Clouds
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      for (let i = 0; i < 8; i++) {
+        const cx = ((i * 110 - Math.floor(camX * 0.18)) % (SCREEN_W + 120) + SCREEN_W + 120) % (SCREEN_W + 120) - 60;
+        const cy = 28 + (i % 3) * 26;
+        drawFluffyDecoCloud(cx, cy);
+      }
+
+      // 4. Parallax Rolling Hills & Biblical Landmarks
+      drawParallaxHills(camX, def.hillB, 0.22, 168, 42);
+      drawParallaxHills(camX, def.hillA, 0.38, 190, 30);
+
+      // Theme-specific distant silhouette details (olive trees, palms, Jerusalem towers)
+      drawThemeLandmarks(camX, def.theme, b);
+
+      // 5. Sparkling Water in Gaps (for River / Lake levels)
+      if (def.water) {
+        const wy = lvl.groundRow * TILE + 8;
+        ctx.fillStyle = "#06b6d4";
+        ctx.fillRect(0, wy, SCREEN_W, SCREEN_H - wy);
+        ctx.fillStyle = "#67e8f9";
+        for (let wx = -(camX % 24); wx < SCREEN_W; wx += 24) {
+          const waveOffset = Math.sin(game.tick * 0.08 + wx * 0.1) * 2;
+          ctx.fillRect(wx, wy + 2 + waveOffset, 14, 2);
+          ctx.fillRect(wx + 8, wy + 12 - waveOffset, 10, 2);
+        }
+      }
+
+      // 6. Ground & Elevated Platforms (Retro Pixel Tiles)
+      for (const plt of lvl.platforms) {
+        if (plt.x + plt.w < camX - 16 || plt.x > camX + SCREEN_W + 16) continue;
+        const sx = Math.floor(plt.x - camX);
+        const sy = Math.floor(plt.y);
+
+        // Earth / Gold brick body
+        ctx.fillStyle = def.groundBody;
+        ctx.fillRect(sx, sy + 4, plt.w, plt.h - 4);
+
+        // Retro brick/stone pattern
+        ctx.fillStyle = "rgba(0,0,0,0.16)";
+        for (let bx = 0; bx < plt.w; bx += TILE) {
+          ctx.fillRect(sx + bx, sy + 6, 1, plt.h - 6);
+          ctx.fillRect(sx + bx, sy + 14, TILE, 1);
+        }
+
+        // Lush vibrant emerald grass / top trim
+        const topColor = def.theme === "desert" && b > 0.35
+          ? lerpColor(def.groundTop, "#10b981", Math.min(1, b * 1.2))
+          : def.groundTop;
+        ctx.fillStyle = topColor;
+        ctx.fillRect(sx, sy, plt.w, 6);
+        ctx.fillStyle = "#a7f3d0";
+        ctx.fillRect(sx, sy, plt.w, 2);
+      }
+
+      // 7. Moving Golden Platforms
+      for (const mp of lvl.movingPlatforms) {
+        const sx = Math.floor(mp.x - camX);
+        const sy = Math.floor(mp.y);
+        ctx.fillStyle = "#fbbf24";
+        ctx.fillRect(sx, sy, mp.w, mp.h);
+        ctx.fillStyle = "#fffbeb";
+        ctx.fillRect(sx + 2, sy + 1, mp.w - 4, 4);
+        ctx.fillStyle = "#b45309";
+        ctx.fillRect(sx, sy + mp.h - 2, mp.w, 2);
+      }
+
+      // 8. Blooming Flowers!
+      for (const fl of lvl.flowers) {
+        if (fl.open <= 0.05) continue;
+        const sx = Math.floor(fl.x - camX);
+        if (sx < -8 || sx > SCREEN_W + 8) continue;
+        const sy = Math.floor(fl.y);
+        const stemH = Math.ceil(5 * fl.open);
+        ctx.fillStyle = "#16a34a";
+        ctx.fillRect(sx, sy - stemH, 2, stemH);
+        if (fl.open > 0.45) {
+          ctx.fillStyle = fl.color;
+          ctx.fillRect(sx - 2, sy - stemH - 3, 6, 4);
+          ctx.fillRect(sx - 1, sy - stemH - 4, 4, 6);
+          ctx.fillStyle = "#fef08a";
+          ctx.fillRect(sx, sy - stemH - 2, 2, 2);
+        }
+      }
+
+      // 9. Gray Doubt Clouds vs Purified Safe White Clouds
+      for (const cl of lvl.clouds) {
+        const sx = Math.floor(cl.x - camX);
+        if (sx + cl.w < -16 || sx > SCREEN_W + 16) continue;
+        const sy = Math.floor(cl.y);
+
+        if (cl.purified) {
+          // Safe Fluffy White Cloud with golden trim
+          ctx.fillStyle = "#bae6fd";
+          ctx.fillRect(sx + 2, sy + 5, cl.w - 4, cl.h - 4);
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(sx, sy + 2, cl.w, cl.h - 4);
+          for (let bx = 4; bx < cl.w - 6; bx += 10) {
+            ctx.fillRect(sx + bx, sy - 2, 8, 5);
+          }
+          // Golden blessing rim
+          ctx.fillStyle = "#fde047";
+          ctx.fillRect(sx + 2, sy + cl.h - 2, cl.w - 4, 2);
+        } else {
+          // Stormy Gray Doubt Cloud (semi-misty with rain droplets)
+          ctx.save();
+          ctx.globalAlpha = 0.86;
+          ctx.fillStyle = "#475569";
+          ctx.fillRect(sx + 2, sy + 4, cl.w - 4, cl.h - 3);
+          ctx.fillStyle = "#64748b";
+          ctx.fillRect(sx, sy + 2, cl.w, cl.h - 5);
+          for (let bx = 4; bx < cl.w - 6; bx += 10) {
+            ctx.fillRect(sx + bx, sy - 1, 8, 4);
+          }
+          // Rain drops of doubt
+          ctx.fillStyle = "#94a3b8";
+          const dropOff = (game.tick >> 2) % 6;
+          for (let rx = 6; rx < cl.w - 4; rx += 9) {
+            ctx.fillRect(sx + rx, sy + cl.h + dropOff, 1, 3);
+          }
+          ctx.restore();
+        }
+      }
+
+      // 10. Golden Shepherd Goal Gate
+      drawGoalGate(lvl.goal.x - camX, lvl.goal.y);
+
+      // 11. Stars & Special Stars
+      for (const st of lvl.stars) {
+        if (st.collected) continue;
+        const sx = Math.floor(st.x - camX);
+        if (sx < -20 || sx > SCREEN_W + 20) continue;
+        const bob = Math.sin(game.tick * 0.09 + st.bobPhase) * 2.5;
+        const sy = Math.floor(st.y + bob);
+
+        if (st.special) {
+          // Prismatic halo behind Special Star
+          ctx.fillStyle = `rgba(253, 224, 71, ${0.28 + Math.sin(game.tick * 0.15) * 0.15})`;
+          ctx.beginPath();
+          ctx.arc(sx + 8, sy + 8, 12, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.drawImage(SPECIAL_STAR_SPRITE, sx, sy);
+        } else {
+          ctx.fillStyle = "rgba(254, 240, 138, 0.26)";
+          ctx.beginPath();
+          ctx.arc(sx + 7, sy + 7, 9, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.drawImage(STAR_SPRITE, sx, sy);
+        }
+      }
+
+      // 12. Cayado de Luz Beams
+      for (const bm of game.beams) {
+        const bx = Math.floor(bm.x - camX);
+        const by = Math.floor(bm.y);
+        ctx.fillStyle = "#fde047";
+        ctx.fillRect(bx, by + 3, 12, 4);
+        ctx.fillRect(bx + 4, by, 4, 10);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(bx + 2, by + 4, 8, 2);
+        ctx.fillRect(bx + 5, by + 2, 2, 6);
+      }
+
+      // 13. Companion Sheep
+      const s = game.sheep;
+      const sheepSprite = (!s.onGround || Math.sin(s.hopPhase) > 0.2) ? SHEEP_SPRITES.hop : SHEEP_SPRITES.idle;
+      drawMirroredSprite(sheepSprite, Math.floor(s.x - camX), Math.floor(s.y), s.facing === -1);
+
+      // 14. Jesús el Buen Pastor
+      const p = game.player;
+      // Golden Magnet Aura if Special Star magnet active
+      if (game.magnetTimer > 0) {
+        const pulse = 18 + Math.sin(game.tick * 0.25) * 4;
+        ctx.strokeStyle = "rgba(253, 224, 71, 0.7)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(p.x - camX + p.w / 2, p.y + p.h / 2, pulse, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Soft golden halo glow behind Jesus
+      ctx.fillStyle = "rgba(253, 224, 71, 0.22)";
+      ctx.beginPath();
+      ctx.arc(Math.floor(p.x - camX + p.w / 2), Math.floor(p.y + 4), 13, 0, Math.PI * 2);
+      ctx.fill();
+
+      let jSprite = JESUS_SPRITES.idle;
+      if (p.attackTimer > 0) {
+        jSprite = JESUS_SPRITES.attack;
+      } else if (!p.onGround) {
+        jSprite = JESUS_SPRITES.jump;
+      } else if (Math.abs(p.vx) > 0.25) {
+        jSprite = Math.floor(p.walkFrame) % 2 === 0 ? JESUS_SPRITES.walk1 : JESUS_SPRITES.walk2;
+      }
+      drawMirroredSprite(jSprite, Math.floor(p.x - camX - 2), Math.floor(p.y - 2), p.facing === -1);
+
+      // 15. Particles
+      for (const pt of game.particles) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife);
+        ctx.fillStyle = pt.color;
+        ctx.fillRect(Math.floor(pt.x - camX), Math.floor(pt.y), pt.size, pt.size);
+        ctx.restore();
+      }
+
+      // 16. Floating Texts ("¡ALELUYA!", "+100", "¡PROMESA +300!")
+      ctx.font = "bold 9px monospace";
+      ctx.textAlign = "center";
+      for (const tx of game.popTexts) {
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, tx.life / 20);
+        const sx = Math.floor(tx.x - camX);
+        const sy = Math.floor(tx.y);
+        ctx.fillStyle = "#082f49";
+        ctx.fillText(tx.text, sx + 1, sy + 1);
+        ctx.fillStyle = tx.color;
+        ctx.fillText(tx.text, sx, sy);
+        ctx.restore();
+      }
+      ctx.textAlign = "left";
+    }
+
+    function drawMirroredSprite(sprite, x, y, flipX) {
+      if (!flipX) {
+        ctx.drawImage(sprite, x, y);
+      } else {
+        ctx.save();
+        ctx.translate(x + sprite.width, y);
+        ctx.scale(-1, 1);
+        ctx.drawImage(sprite, 0, 0);
+        ctx.restore();
+      }
+    }
+
+    function drawFluffyDecoCloud(x, y) {
+      ctx.fillRect(x, y + 4, 34, 10);
+      ctx.fillRect(x + 6, y, 20, 6);
+      ctx.fillRect(x + 12, y - 3, 10, 4);
+    }
+
+    function drawParallaxHills(camX, color, factor, baseY, amp) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(0, SCREEN_H);
+      for (let sx = 0; sx <= SCREEN_W; sx += 8) {
+        const wx = sx + camX * factor;
+        const hy = baseY + Math.sin(wx * 0.015) * amp + Math.cos(wx * 0.007) * (amp * 0.5);
+        ctx.lineTo(sx, hy);
+      }
+      ctx.lineTo(SCREEN_W, SCREEN_H);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawThemeLandmarks(camX, theme, bloom) {
+      const groundY = 14 * TILE;
+      for (let i = 0; i < 12; i++) {
+        const lx = i * 160 + 40 - Math.floor(camX * 0.6);
+        if (lx < -40 || lx > SCREEN_W + 40) continue;
+
+        if (theme === "desert") {
+          // Palm tree
+          ctx.fillStyle = "#92400e";
+          ctx.fillRect(lx, groundY - 30, 4, 30);
+          ctx.fillStyle = bloom > 0.3 ? "#10b981" : "#65a30d";
+          ctx.fillRect(lx - 10, groundY - 34, 24, 5);
+          ctx.fillRect(lx - 6, groundY - 38, 16, 4);
+        } else if (theme === "jerusalem" || theme === "tabor") {
+          // Golden distant pillar/arch
+          ctx.fillStyle = "rgba(253, 224, 71, 0.35)";
+          ctx.fillRect(lx, groundY - 42, 6, 42);
+          ctx.fillRect(lx + 16, groundY - 42, 6, 42);
+          ctx.fillRect(lx - 2, groundY - 46, 26, 5);
+        } else {
+          // Cheerful cypress/olive tree
+          ctx.fillStyle = "#78350f";
+          ctx.fillRect(lx + 4, groundY - 14, 4, 14);
+          ctx.fillStyle = "#047857";
+          ctx.fillRect(lx - 2, groundY - 30, 16, 16);
+          ctx.fillStyle = "#10b981";
+          ctx.fillRect(lx, groundY - 34, 12, 12);
+        }
+      }
+    }
+
+    function drawGoalGate(x, y) {
+      const sx = Math.floor(x);
+      const sy = Math.floor(y);
+      if (sx < -48 || sx > SCREEN_W + 48) return;
+
+      // Radiant golden aura
+      ctx.fillStyle = `rgba(253, 224, 71, ${0.22 + Math.sin(game.tick * 0.1) * 0.1})`;
+      ctx.beginPath();
+      ctx.arc(sx + 16, sy + 24, 24, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Arch pillars
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(sx, sy + 8, 6, 40);
+      ctx.fillRect(sx + 26, sy + 8, 6, 40);
+      // Arch top
+      ctx.fillStyle = "#fde047";
+      ctx.fillRect(sx - 2, sy, 36, 10);
+      ctx.fillStyle = "#fffbeb";
+      ctx.fillRect(sx + 2, sy + 2, 28, 4);
+
+      // Luminous Cross emblem above gate
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(sx + 14, sy - 14, 4, 14);
+      ctx.fillRect(sx + 10, sy - 10, 12, 4);
+
+      // Inner shimmering portal
+      ctx.fillStyle = "rgba(103, 232, 249, 0.55)";
+      ctx.fillRect(sx + 6, sy + 10, 20, 38);
+    }
+
+    function drawTitleBackdrop() {
+      const g = ctx.createLinearGradient(0, 0, 0, SCREEN_H);
+      g.addColorStop(0, "#06b6d4");
+      g.addColorStop(1, "#fde68a");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, SCREEN_W, SCREEN_H);
+
+      // Rainbow
+      const rbColors = ["#fb7185", "#fb923c", "#facc15", "#34d399", "#38bdf8", "#a78bfa"];
+      rbColors.forEach((c, i) => {
+        ctx.strokeStyle = c;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(240, 215, 140 - i * 4, Math.PI, 0);
+        ctx.stroke();
+      });
+
+      // Meadow
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(0, 224, SCREEN_W, 48);
+      ctx.fillStyle = "#a7f3d0";
+      ctx.fillRect(0, 224, SCREEN_W, 3);
+
+      // Draw Jesus & Sheep cheering on the title meadow
+      ctx.drawImage(JESUS_SPRITES.idle, 48, 200);
+      ctx.drawImage(SHEEP_SPRITES.idle, 26, 212);
+    }
+
+    // =========================================================================
+    // 10. MAIN LOOP (60Hz FIXED TIMESTEP)
+    // =========================================================================
+    let lastTime = performance.now();
+    let accumulator = 0;
+    const STEP_MS = 1000 / 60;
+
+    function loop(now) {
+      const delta = Math.min(80, now - lastTime);
+      lastTime = now;
+      accumulator += delta;
+
+      while (accumulator >= STEP_MS) {
+        updateGame();
+        accumulator -= STEP_MS;
+      }
+
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    // =========================================================================
+    // 11. INPUT HANDLING (KEYBOARD, TOUCH, UI BUTTONS)
+    // =========================================================================
+    function buildLevelPicker() {
+      levelPicker.innerHTML = "";
+      LEVEL_DEFS.forEach((lvl, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "level-chip" + (idx === game.selectedStartLevel ? " selected" : "");
+        btn.textContent = `${lvl.id}. ${lvl.short}`;
+        btn.addEventListener("click", () => {
+          game.selectedStartLevel = idx;
+          buildLevelPicker();
+        });
+        levelPicker.appendChild(btn);
+      });
+    }
+
+    window.addEventListener("keydown", (e) => {
+      const code = e.code;
+      if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(code)) {
+        e.preventDefault();
+      }
+
+      audio.ensureContext();
+
+      if (code === "ArrowLeft" || code === "KeyA") keys.left = true;
+      if (code === "ArrowRight" || code === "KeyD") keys.right = true;
+      if (code === "Space" || code === "ArrowUp" || code === "KeyW" || code === "KeyZ") {
+        if (!keys.jump) jumpBufferedFrames = 8;
+        keys.jump = true;
+      }
+      if (code === "KeyX" || code === "KeyJ" || code === "ShiftLeft" || code === "ShiftRight" || code === "KeyF" || code === "KeyK") {
+        if (!keys.staff) staffPressedThisFrame = true;
+        keys.staff = true;
+      }
+
+      if (code === "KeyP" || code === "Escape") {
+        if (game.state === "playing" || game.state === "paused") togglePause();
+      }
+      if (code === "KeyR") {
+        if (game.state === "playing" || game.state === "paused" || game.state === "void") {
+          game.totalScore = game.levelScoreStart;
+          startLevel(game.levelIdx, true);
+        }
+      }
+      if (code === "Enter" && game.state === "void") {
+        game.totalScore = game.levelScoreStart;
+        startLevel(game.levelIdx, true);
+      }
+    });
+
+    window.addEventListener("keyup", (e) => {
+      const code = e.code;
+      if (code === "ArrowLeft" || code === "KeyA") keys.left = false;
+      if (code === "ArrowRight" || code === "KeyD") keys.right = false;
+      if (code === "Space" || code === "ArrowUp" || code === "KeyW" || code === "KeyZ") keys.jump = false;
+      if (code === "KeyX" || code === "KeyJ" || code === "ShiftLeft" || code === "ShiftRight" || code === "KeyF" || code === "KeyK") {
+        keys.staff = false;
+      }
+    });
+
+    // Touch buttons binding using Pointer Events (supports multi-touch cleanly)
+    function bindTouchButton(el, onDown, onUp) {
+      const downHandler = (e) => {
+        e.preventDefault();
+        audio.ensureContext();
+        el.classList.add("active");
+        onDown();
+      };
+      const upHandler = (e) => {
+        e.preventDefault();
+        el.classList.remove("active");
+        onUp();
+      };
+      el.addEventListener("pointerdown", downHandler);
+      el.addEventListener("pointerup", upHandler);
+      el.addEventListener("pointercancel", upHandler);
+      el.addEventListener("pointerleave", upHandler);
+    }
+
+    bindTouchButton(
+      document.getElementById("touchLeft"),
+      () => { keys.left = true; },
+      () => { keys.left = false; }
+    );
+    bindTouchButton(
+      document.getElementById("touchRight"),
+      () => { keys.right = true; },
+      () => { keys.right = false; }
+    );
+    bindTouchButton(
+      document.getElementById("touchJump"),
+      () => { keys.jump = true; jumpBufferedFrames = 8; },
+      () => { keys.jump = false; }
+    );
+    bindTouchButton(
+      document.getElementById("touchStaff"),
+      () => { keys.staff = true; staffPressedThisFrame = true; },
+      () => { keys.staff = false; }
+    );
+
+    // UI Button Listeners
+    document.getElementById("btnStartGame").addEventListener("click", () => {
+      startLevel(game.selectedStartLevel, false);
+    });
+
+    btnPause.addEventListener("click", () => {
+      togglePause();
+    });
+
+    btnRestartTop.addEventListener("click", () => {
+      if (game.state === "title") {
+        startLevel(game.selectedStartLevel, false);
+      } else {
+        game.totalScore = game.levelScoreStart;
+        startLevel(game.levelIdx, true);
+      }
+    });
+
+    document.getElementById("btnResume").addEventListener("click", () => togglePause());
+
+    document.getElementById("btnRestartPause").addEventListener("click", () => {
+      game.totalScore = game.levelScoreStart;
+      startLevel(game.levelIdx, true);
+    });
+
+    document.getElementById("btnRetryVoid").addEventListener("click", () => {
+      game.totalScore = game.levelScoreStart;
+      startLevel(game.levelIdx, true);
+    });
+
+    document.getElementById("btnReplayClear").addEventListener("click", () => {
+      game.totalScore = game.levelScoreStart;
+      startLevel(game.levelIdx, true);
+    });
+
+    document.getElementById("btnNextLevel").addEventListener("click", () => {
+      const next = game.levelIdx + 1;
+      if (next >= LEVEL_DEFS.length) {
+        startLevel(0, false);
+      } else {
+        startLevel(next, true);
+      }
+    });
+
+    function goToTitle() {
+      audio.stopMusic();
+      hideAllOverlays();
+      hideToast();
+      game.state = "title";
+      btnPause.textContent = "⏸ Pausar";
+      game.level = null;
+      overlayTitle.classList.add("active");
+    }
+
+    document.getElementById("btnBackTitlePause").addEventListener("click", goToTitle);
+    document.getElementById("btnBackTitleVoid").addEventListener("click", goToTitle);
+    document.getElementById("btnBackTitleClear").addEventListener("click", goToTitle);
+
+    songSelect.addEventListener("change", (e) => {
+      audio.ensureContext();
+      audio.setSong(e.target.value);
+    });
+
+    btnMusic.addEventListener("click", () => {
+      audio.ensureContext();
+      audio.musicEnabled = !audio.musicEnabled;
+      if (audio.musicEnabled) {
+        btnMusic.textContent = "🔊 Música: ON";
+        btnMusic.classList.remove("muted");
+        btnMusic.classList.add("emerald");
+        if (game.state === "playing") audio.startMusic();
+      } else {
+        btnMusic.textContent = "🔇 Música: OFF";
+        btnMusic.classList.remove("emerald");
+        btnMusic.classList.add("muted");
+        audio.stopMusic();
+      }
+    });
+
+    btnSfx.addEventListener("click", () => {
+      audio.ensureContext();
+      audio.sfxEnabled = !audio.sfxEnabled;
+      if (audio.sfxEnabled) {
+        btnSfx.textContent = "🔔 SFX: ON";
+        btnSfx.classList.remove("muted");
+      } else {
+        btnSfx.textContent = "🔕 SFX: OFF";
+        btnSfx.classList.add("muted");
+      }
+    });
+
+    btnTouchToggle.addEventListener("click", () => {
+      touchControlsEl.classList.toggle("hidden");
+    });
+
+    // Init
+    buildLevelPicker();
+    requestAnimationFrame(loop);
+  })();
+  </script>
+</body>
+</html>
